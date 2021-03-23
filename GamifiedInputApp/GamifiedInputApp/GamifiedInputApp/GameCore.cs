@@ -54,6 +54,7 @@ namespace GamifiedInputApp
         {
             m_context.State = GameState.Start;
             m_context.Timer = new GameTimer();
+            m_context.Timer.AutoReset = false;
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
 
