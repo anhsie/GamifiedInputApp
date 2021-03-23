@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
 
 using GamifiedInputApp.Minigames;
 
@@ -21,7 +22,10 @@ namespace GamifiedInputApp
 
     class GameCore
     {
+        private const double MAX_FPS = 60;
+
         public static List<IMinigame> Minigames { get; private set; }
+
         static GameCore()
         {
             Minigames = new List<IMinigame>();
@@ -31,12 +35,17 @@ namespace GamifiedInputApp
         private GameContext m_context;
         private ContainerVisual m_rootVisual;
         private Queue<IMinigame> m_minigameQueue;
+        private DispatcherTimer m_loopTimer;
 
         public GameCore(ContainerVisual rootVisual)
         {
             m_context.state = GameState.Start;
             m_context.timer = new GameTimer();
+            m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
+
+            m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
+            m_loopTimer.Tick += GameLoop;
         }
 
         public void Run()
@@ -50,15 +59,15 @@ namespace GamifiedInputApp
                 m_minigameQueue.Enqueue(minigame);
             }
 
+            // start game
             m_context.state = GameState.Start;
-            while (this.GameLoop()) continue;
-
-            // cleanup code here
-            // goto results screen
+            m_loopTimer.Start();
         }
 
-        protected bool GameLoop()
+        protected void GameLoop(Object source, object e)
         {
+            if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
+
             switch (m_context.state)
             {
                 case GameState.Start:
@@ -73,16 +82,16 @@ namespace GamifiedInputApp
                 case GameState.Play:
                     if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames available");
 
-                    this.MinigameStateLogic();
+                    this.UpdateMinigame();
                     break;
                 case GameState.Results:
-                    return false; // don't continue game loop
+                    m_loopTimer.Stop();
+                    // goto results screen
+                    break;
             }
-
-            return true;
         }
 
-        private void MinigameStateLogic()
+        private void UpdateMinigame()
         {
             IMinigame current = m_minigameQueue.Peek();
 
