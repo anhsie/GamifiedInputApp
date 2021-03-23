@@ -66,6 +66,7 @@ namespace GamifiedInputApp
         {
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
+            Minigames.Add(new CharacterReceived());
 
             // TODO: filter by selected minigames
             foreach (IMinigame minigame in Minigames)
