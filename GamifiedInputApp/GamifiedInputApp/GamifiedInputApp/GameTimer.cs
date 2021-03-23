@@ -3,7 +3,7 @@
 namespace GamifiedInputApp
 {
     // Custom timer class with getters for start and end times
-    class GameTimer : System.Timers.Timer
+    public class GameTimer : System.Timers.Timer
     {
         private DateTime m_startTime;
         private DateTime m_endTime;

@@ -40,12 +40,12 @@ namespace GamifiedInputApp
             MinigamePicker.SelectedIndex = 0;
 
             gameCore = new GameCore(rootVisual);
-            gameCore.GoToResults += GameCore_GoToResults;
+            gameCore.Results += GameCore_GoToResults;
         }
 
-        private void GameCore_GoToResults(object sender, GameCore.GoToResultsEventArgs e)
+        private void GameCore_GoToResults(object sender, ResultsEventArgs e)
         {
-            ScoreText.Text = e.score.ToString();
+            ScoreText.Text = e.Score.ToString();
             Results.Visibility = Visibility.Visible;
         }
 

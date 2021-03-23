@@ -23,7 +23,7 @@ namespace GamifiedInputApp.Minigames
 
             // Do update logic for minigame
 
-            return gameContext.timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
+            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
         }
 
         public void End(in GameContext gameContext, in MinigameState finalState)
@@ -46,7 +46,7 @@ namespace GamifiedInputApp.Minigames
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
-            float dt = (float)gameContext.timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime;
 
             Vector3 offset = m_sprite.Offset;
             offset.X += (dt * SPRITE_SPEED);

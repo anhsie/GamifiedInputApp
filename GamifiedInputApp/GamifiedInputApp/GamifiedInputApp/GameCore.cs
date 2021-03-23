@@ -7,24 +7,33 @@ using GamifiedInputApp.Minigames;
 
 namespace GamifiedInputApp
 {
-    enum GameState
+    public enum GameState
     {
         Start,
         Play,
         Results
     }
 
-    struct GameContext
+    public struct GameContext
     {
-        public GameState state; // current game state
-        public GameTimer timer; // minigame timer
-        public int score;
+        public GameState State; // current game state
+        public GameTimer Timer; // minigame timer
+        public int Score; // total score
+    }
+
+    public class ResultsEventArgs
+    {
+        public ResultsEventArgs(GameContext context)
+        {
+            Score = context.Score;
+        }
+
+        public int Score { get; }
     }
 
     class GameCore
     {
         private const double MAX_FPS = 60;
-
         public static List<IMinigame> Minigames { get; private set; }
 
         static GameCore()
@@ -33,6 +42,9 @@ namespace GamifiedInputApp
             Minigames.Add(new DummyMinigame());
         }
 
+        public delegate void ResultsEventHandler(object sender, ResultsEventArgs e);
+        public event ResultsEventHandler Results;
+
         private GameContext m_context;
         private ContainerVisual m_rootVisual;
         private Queue<IMinigame> m_minigameQueue;
@@ -40,8 +52,8 @@ namespace GamifiedInputApp
 
         public GameCore(ContainerVisual rootVisual)
         {
-            m_context.state = GameState.Start;
-            m_context.timer = new GameTimer();
+            m_context.State = GameState.Start;
+            m_context.Timer = new GameTimer();
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
 
@@ -61,56 +73,41 @@ namespace GamifiedInputApp
             }
 
             // start game
-            m_context.state = GameState.Start;
+            m_context.State = GameState.Start;
             m_loopTimer.Start();
         }
-
-        protected void OnGoToResults(GoToResultsEventArgs e)
-        {
-            EventHandler<GoToResultsEventArgs> handler = GoToResults;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
-        }
-
-        public class GoToResultsEventArgs : EventArgs
-        {
-            public int score { get; set; }
-        }
-
-        public event EventHandler<GoToResultsEventArgs> GoToResults;
 
 
         protected void GameLoop(Object source, object e)
         {
             if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
 
-            switch (m_context.state)
+            switch (m_context.State)
             {
                 case GameState.Start:
                     if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames selected");
 
+                    // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
                     current.Start(m_context, m_rootVisual);
 
-                    m_context.timer.Interval = 2000;
-                    m_context.timer.Start();
-                    m_context.state = GameState.Play;
+                    // start timer
+                    m_context.Timer.Interval = 2000;
+                    m_context.Timer.Start();
+                    m_context.State = GameState.Play;
                     break;
                 case GameState.Play:
                     if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames available");
 
+                    // update minigame
                     this.UpdateMinigame();
                     break;
                 case GameState.Results:
+                    // stop timer
                     m_loopTimer.Stop();
 
-                    // goto results screen
-                    GoToResultsEventArgs args = new GoToResultsEventArgs();
-                    args.score = m_context.score;
-                    OnGoToResults(args);
-
+                    // invoke results event
+                    Results?.Invoke(this, new ResultsEventArgs(m_context));
                     break;
             }
         }
@@ -119,10 +116,10 @@ namespace GamifiedInputApp
         {
             IMinigame current = m_minigameQueue.Peek();
 
-            m_context.timer.NextFrame();
+            m_context.Timer.NextFrame();
             MinigameState state = current.Update(m_context);
 
-            if (state == MinigameState.Play && m_context.timer.Finished)
+            if (state == MinigameState.Play && m_context.Timer.Finished)
             {
                 state = MinigameState.Fail;
             }
@@ -130,16 +127,16 @@ namespace GamifiedInputApp
             if (state == MinigameState.Pass)
             {
                 current.End(m_context, state);
-                m_context.timer.Stop();
+                m_context.Timer.Stop();
 
                 m_minigameQueue.Dequeue();
-                m_context.state = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
             }
             else if (state == MinigameState.Fail)
             {
                 current.End(m_context, state);
-                m_context.timer.Stop();
-                m_context.state = GameState.Results;
+                m_context.Timer.Stop();
+                m_context.State = GameState.Results;
             }
             else
             {
