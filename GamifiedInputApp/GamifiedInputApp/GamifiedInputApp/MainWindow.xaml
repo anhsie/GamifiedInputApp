@@ -10,7 +10,11 @@
     <Grid x:Name="Root">
         <StackPanel x:Name="Menu" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <ComboBox x:Name="MinigamePicker" SelectionChanged="MinigamePicker_SelectionChanged" Margin="10,10,10,10"/>
-            <Button x:Name="StartButton" Click="startButton_Click">Start Me</Button>
+            <Button x:Name="StartButton" Click="startButton_Click">Start</Button>
+        </StackPanel>
+        <StackPanel x:Name="Results" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock x:Name="ScoreText" FontWeight="Bold" FontSize="20" Margin="10,10,10,10"/>
+            <Button x:Name="GoToMenuButton" Click="GoToMenuButton_Click">Main Menu</Button>
         </StackPanel>
     </Grid>
     
