@@ -40,6 +40,7 @@ namespace GamifiedInputApp
         {
             Minigames = new List<IMinigame>();
             Minigames.Add(new DummyMinigame());
+            Minigames.Add(new GestureRecognizerMinigame()); 
         }
 
         public delegate void ResultsEventHandler(object sender, ResultsEventArgs e);
