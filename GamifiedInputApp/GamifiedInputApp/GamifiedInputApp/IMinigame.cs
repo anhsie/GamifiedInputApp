@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Composition;
 
 
-namespace GamifiedInputApp.Minigame
+namespace GamifiedInputApp.Minigames
 {
     enum MinigameState
     {
@@ -12,12 +12,10 @@ namespace GamifiedInputApp.Minigame
 
     interface IMinigame
     {
-        public void setup(in GameContext gameContext, ContainerVisual rootVisual);
+        public void Start(in GameContext gameContext, ContainerVisual rootVisual);
 
-        public void start(in GameContext gameContext);
+        public MinigameState Update(in GameContext gameContext);
 
-        public MinigameState update(in GameContext gameContext);
-
-        public void end(in GameContext gameContext);
+        public void End(in GameContext gameContext, in MinigameState finalState);
     }
 }
