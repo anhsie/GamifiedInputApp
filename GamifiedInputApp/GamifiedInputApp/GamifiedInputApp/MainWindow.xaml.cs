@@ -12,6 +12,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml.Hosting;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,14 +25,30 @@ namespace GamifiedInputApp
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        GameCore gameCore;
+        ContainerVisual rootVisual;
+
         public MainWindow()
         {
             this.InitializeComponent();
+
+            rootVisual = Compositor.CreateContainerVisual();
+            ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
+
+            MinigamePicker.Items.Add("All");
+            MinigamePicker.SelectedIndex = 0;
+
+            gameCore = new GameCore(rootVisual);
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            myButton.Content = "Clicked";
+
+        }
+
+        private void MinigamePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

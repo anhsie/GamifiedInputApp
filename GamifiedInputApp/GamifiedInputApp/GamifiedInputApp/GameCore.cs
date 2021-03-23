@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.UI.Composition;
 
 namespace GamifiedInputApp
 {
@@ -22,11 +23,13 @@ namespace GamifiedInputApp
     class GameCore
     {
         GameContext context;
+        ContainerVisual rootVisual;
 
-        GameCore()
+        public GameCore(ContainerVisual rootVisual)
         {
             context.state = GameState.Menu;
             context.timer = new GameTimer();
+            this.rootVisual = rootVisual;
         }
     }
 }
