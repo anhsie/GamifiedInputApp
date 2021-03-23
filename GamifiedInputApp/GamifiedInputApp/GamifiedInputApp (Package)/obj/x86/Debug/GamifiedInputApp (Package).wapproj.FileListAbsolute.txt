@@ -1,0 +1,39 @@
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\App.xbf
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\MainWindow.xbf
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\GamifiedInputApp.deps.json
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\GamifiedInputApp.exe
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\GamifiedInputApp.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\GamifiedInputApp.runtimeconfig.json
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\GamifiedInputApp.pdb
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\Microsoft.Windows.SDK.NET.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\WinRT.Runtime.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\Microsoft.ApplicationModel.Resources.Projection.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\Microsoft.WinUI.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\Microsoft.Internal.FrameworkUdk.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp\Microsoft.ui.xaml.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\resources.pri
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\AppxManifest.xml
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\GamifiedInputApp (Package).build.appxrecipe
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\Microsoft.Internal.FrameworkUdk.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\bin\x86\Debug\Microsoft.ui.xaml.dll
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\GamifiedInputApp (Package).wapprojAssemblyReference.cache
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\GamifiedInputApp (Package).wapproj.CoreCompileInputs.cache
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\GamifiedInputApp (Package).wapproj.CopyComplete
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\GamifiedInputApp.pri.xml
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\priconfig.xml
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\priconfig.xml.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\unfiltered.layout.resfiles
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\unfiltered.layout.resfiles.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\filtered.layout.resfiles
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\filtered.layout.resfiles.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\excluded.layout.resfiles
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\excluded.layout.resfiles.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\resources.resfiles
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\resources.resfiles.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\pri.resfiles
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\pri.resfiles.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\qualifiers.txt
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\qualifiers.txt.intermediate
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\MultipleQualifiersPerDimensionFound.txt
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\ProjectArchitectures.txt
+C:\Users\edrod\Desktop\FHL\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp\GamifiedInputApp (Package)\obj\x86\Debug\GamifiedInputApp (Package).wapproj.LastBuild.txt
