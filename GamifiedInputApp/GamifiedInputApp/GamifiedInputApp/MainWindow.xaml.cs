@@ -31,6 +31,7 @@ namespace GamifiedInputApp
         public MainWindow()
         {
             this.InitializeComponent();
+            Results.Visibility = Visibility.Collapsed;
 
             rootVisual = Compositor.CreateContainerVisual();
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
@@ -39,16 +40,30 @@ namespace GamifiedInputApp
             MinigamePicker.SelectedIndex = 0;
 
             gameCore = new GameCore(rootVisual);
+            gameCore.GoToResults += GameCore_GoToResults;
+        }
+
+        private void GameCore_GoToResults(object sender, GameCore.GoToResultsEventArgs e)
+        {
+            ScoreText.Text = e.score.ToString();
+            Results.Visibility = Visibility.Visible;
         }
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Menu.Visibility = Visibility.Collapsed;
+            gameCore.Run();
         }
 
         private void MinigamePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void GoToMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            Results.Visibility = Visibility.Collapsed;
+            Menu.Visibility = Visibility.Visible;
         }
     }
 }

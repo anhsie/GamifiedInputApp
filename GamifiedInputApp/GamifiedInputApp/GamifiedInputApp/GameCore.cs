@@ -18,6 +18,7 @@ namespace GamifiedInputApp
     {
         public GameState state; // current game state
         public GameTimer timer; // minigame timer
+        public int score;
     }
 
     class GameCore
@@ -64,6 +65,23 @@ namespace GamifiedInputApp
             m_loopTimer.Start();
         }
 
+        protected void OnGoToResults(GoToResultsEventArgs e)
+        {
+            EventHandler<GoToResultsEventArgs> handler = GoToResults;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        public class GoToResultsEventArgs : EventArgs
+        {
+            public int score { get; set; }
+        }
+
+        public event EventHandler<GoToResultsEventArgs> GoToResults;
+
+
         protected void GameLoop(Object source, object e)
         {
             if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
@@ -76,6 +94,7 @@ namespace GamifiedInputApp
                     IMinigame current = m_minigameQueue.Peek();
                     current.Start(m_context, m_rootVisual);
 
+                    m_context.timer.Interval = 2000;
                     m_context.timer.Start();
                     m_context.state = GameState.Play;
                     break;
@@ -86,7 +105,12 @@ namespace GamifiedInputApp
                     break;
                 case GameState.Results:
                     m_loopTimer.Stop();
+
                     // goto results screen
+                    GoToResultsEventArgs args = new GoToResultsEventArgs();
+                    args.score = m_context.score;
+                    OnGoToResults(args);
+
                     break;
             }
         }
