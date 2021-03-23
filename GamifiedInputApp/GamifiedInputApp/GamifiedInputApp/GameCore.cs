@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.UI.Composition;
 
 using GamifiedInputApp.Minigames;
 
@@ -28,12 +29,14 @@ namespace GamifiedInputApp
         }
 
         private GameContext m_context;
+        private ContainerVisual m_rootVisual;
         private Queue<IMinigame> m_minigameQueue;
 
-        public GameCore()
+        public GameCore(ContainerVisual rootVisual)
         {
             m_context.state = GameState.Start;
             m_context.timer = new GameTimer();
+            m_rootVisual = rootVisual;
         }
 
         public void Run()
@@ -62,7 +65,7 @@ namespace GamifiedInputApp
                     if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames selected");
 
                     IMinigame current = m_minigameQueue.Peek();
-                    current.Start(m_context, null /* todo: root visual */);
+                    current.Start(m_context, m_rootVisual);
 
                     m_context.timer.Start();
                     m_context.state = GameState.Play;
@@ -111,5 +114,4 @@ namespace GamifiedInputApp
             }
         }
     }
-
 }

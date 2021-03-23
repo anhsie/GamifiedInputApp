@@ -7,7 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid x:Name="Root">
+        <StackPanel x:Name="Menu" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ComboBox x:Name="MinigamePicker" SelectionChanged="MinigamePicker_SelectionChanged" Margin="10,10,10,10"/>
+            <Button x:Name="StartButton" Click="startButton_Click">Start Me</Button>
+        </StackPanel>
+    </Grid>
+    
 </Window>
