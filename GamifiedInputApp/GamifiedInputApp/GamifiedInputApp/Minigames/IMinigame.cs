@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Composition;
+using Microsoft.UI.Input.Experimental;
 using Windows.Devices.Input;
 
 namespace GamifiedInputApp.Minigames
@@ -41,7 +42,7 @@ namespace GamifiedInputApp.Minigames
     {
         internal MinigameInfo Info { get; }
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual);
+        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite);
 
         public MinigameState Update(in GameContext gameContext);
 

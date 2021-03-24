@@ -15,17 +15,20 @@ namespace GamifiedInputApp.Minigames.Keyboard
     {
         private const float SPRITE_SPEED = 0.5f;
 
+        private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
         private Compositor compositor;
+        private UInt32 ansIndex;
 
         private List<ICompositionSurface> letterImages;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CharacterReceived", SupportedDeviceTypes.Keyboard);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual)
+        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
+            this.rootVisual = rootVisual;
             compositor = rootVisual.Compositor;
-            this.Setup(rootVisual); // Setup game board
+            this.Setup(rootVisual, inputSite); // Setup game board
 
             // Do start logic for minigame
 
@@ -67,6 +70,12 @@ namespace GamifiedInputApp.Minigames.Keyboard
             this.Animate(gameContext); // Animate game board
 
             // Do update logic for minigame
+            
+            // TODO: fail based on size of window
+            if(letterVisual != null && letterVisual.Offset.Y > 500)
+            {
+                return MinigameState.Fail;
+            }
 
             return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
         }
@@ -79,16 +88,24 @@ namespace GamifiedInputApp.Minigames.Keyboard
         }
 
 
-        private void Setup(ContainerVisual rootVisual)
+        private void Setup(ContainerVisual rootVisual, ExpInputSite inputSite)
         {
             SetupImages();
+
+            if(inputSite != null)
+            {
+                var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
+                keyboardInput.CharacterReceived += CharacterReceivedEventHandler;
+            }
+
+            ansIndex = (uint)new Random().Next(0, 25);
 
             // Setup game board here
             letterVisual = compositor.CreateSpriteVisual();
             letterVisual.Size = new Vector2(100, 100);
             letterVisual.Offset = new Vector3(100,0,0);
             var surfaceBrush = compositor.CreateSurfaceBrush();
-            surfaceBrush.Surface = letterImages[0];
+            surfaceBrush.Surface = letterImages[(int)ansIndex];
             letterVisual.Brush = surfaceBrush;
             rootVisual.Children.InsertAtTop(letterVisual);
         }
@@ -98,14 +115,32 @@ namespace GamifiedInputApp.Minigames.Keyboard
             // Animate things here
             float dt = (float)gameContext.Timer.DeltaTime;
 
-            Vector3 offset = letterVisual.Offset;
-            offset.Y += (dt * SPRITE_SPEED);
-            letterVisual.Offset = offset;
+            if(letterVisual != null)
+            {
+                Vector3 offset = letterVisual.Offset;
+                offset.Y += (dt * SPRITE_SPEED);
+                letterVisual.Offset = offset;
+            }
         }
 
         private void Cleanup()
         {
             letterVisual = null;
+            rootVisual.Children.RemoveAll();
+        }
+
+        private void CharacterReceivedEventHandler(object sender, Windows.UI.Core.CharacterReceivedEventArgs args)
+        {
+            var keyCode = args.KeyCode;
+            // make sure key is from a-z
+            if(keyCode >= 0x41 && keyCode <= 0x5A)
+            {
+                var index = keyCode - 0x41;
+                if(index == ansIndex)
+                {
+                    letterVisual = null;
+                }
+            }
         }
     }
 }
