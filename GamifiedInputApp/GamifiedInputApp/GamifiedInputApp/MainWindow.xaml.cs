@@ -16,11 +16,13 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
+//using Microsoft.Windows.Sdk;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 using GamifiedInputApp.Minigames;
+using System.Diagnostics;
 
 namespace GamifiedInputApp
 {
@@ -43,6 +45,10 @@ namespace GamifiedInputApp
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
             gameCore = new GameCore(rootVisual);
             gameCore.Results += GameCore_GoToResults;
+
+            //var hwnd = new HWND(this.GetWindowHandle());
+            //PInvoke.ShowWindow(hwnd, (SHOW_WINDOW_CMD)3);
+            //PInvoke.CreateWindowEx(WINDOWS_EX_STYLE.WS_EX_APPWINDOW, );
         }
 
         private void PopulateMinigames()
