@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Composition.Experimental;
+using Microsoft.UI.Input.Experimental;
 using Microsoft.UI.Xaml.Media;
 
 namespace GamifiedInputApp.Minigames
@@ -86,9 +88,6 @@ namespace GamifiedInputApp.Minigames
             var surfaceBrush = compositor.CreateSurfaceBrush();
             surfaceBrush.Surface = letterImages[0];
             letterVisual.Brush = surfaceBrush;
-            //var colorBrush = compositor.CreateColorBrush();
-            //colorBrush.Color = Microsoft.UI.Colors.Red;
-            //letterVisual.Brush = colorBrush;
             rootVisual.Children.InsertAtTop(letterVisual);
         }
 
