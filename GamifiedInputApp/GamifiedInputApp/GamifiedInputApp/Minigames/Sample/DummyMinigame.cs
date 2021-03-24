@@ -2,13 +2,12 @@
 using System;
 using System.Numerics;
 
-namespace GamifiedInputApp.Minigames
+namespace GamifiedInputApp.Minigames.Sample
 {
     class DummyMinigame : IMinigame
     {
-        private const float SPRITE_SPEED = 1.0f;
-
         private SpriteVisual m_sprite;
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.All);
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual)
         {
@@ -33,6 +32,11 @@ namespace GamifiedInputApp.Minigames
             // Do cleanup logic for minigame
         }
 
+        /*******************************/
+        /***** Animation functions *****/
+        /*******************************/
+
+        private const float SPRITE_SPEED = 1.0f;
 
         private void Setup(ContainerVisual rootVisual)
         {

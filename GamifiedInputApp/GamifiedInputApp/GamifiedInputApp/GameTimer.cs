@@ -11,36 +11,45 @@ namespace GamifiedInputApp
         private DateTime m_currFrame;
         private DateTime m_lastFrame;
 
+        public bool StepFrames { get; set; }
+
         public GameTimer() : base()
         {
-            this.Elapsed += this.ElapsedEvent;
+            Elapsed += ElapsedEvent;
+            StepFrames = false;
         }
 
         protected new void Dispose()
         {
-            this.Elapsed -= this.ElapsedEvent;
+            Elapsed -= ElapsedEvent;
             base.Dispose();
         }
 
         /// <summary>
+        /// Get the current time, as seen by the timer
+        /// </summary>
+        public DateTime CurrentTime => StepFrames ? m_currFrame : DateTime.Now;
+
+        /// <summary>
         /// Get the time elapsed since the timer started
         /// </summary>
-        public double TimeElapsed => (this.m_currFrame - this.m_startTime).TotalMilliseconds;
+        public double TimeElapsed => (CurrentTime - m_startTime).TotalMilliseconds;
 
         /// <summary>
         /// Get the time remaining until the Elapsed event is fired
         /// </summary>
-        public double TimeRemaining => (this.m_endTime - this.m_currFrame).TotalMilliseconds;
+        public double TimeRemaining => (m_endTime - CurrentTime).TotalMilliseconds;
 
         /// <summary>
         /// Get the time since the last frame (for animation purposes)
+        /// If StepFrames is false, returns 0
         /// </summary>
-        public double DeltaTime => (this.m_currFrame - this.m_lastFrame).TotalMilliseconds;
+        public double DeltaTime => StepFrames ? (m_currFrame - m_lastFrame).TotalMilliseconds : 0;
 
         /// <summary>
         /// Returns true if the timer has finished (and AutoReset is off) or false otherwise
         /// </summary>
-        public bool Finished => !this.AutoReset && this.TimeRemaining <= 0;
+        public bool Finished => !AutoReset && TimeRemaining <= 0;
 
         /// <summary>
         /// Should be called once per game loop, prior to calling update() to process game logic
@@ -48,29 +57,26 @@ namespace GamifiedInputApp
         /// </summary>
         public void NextFrame()
         {
-            this.m_lastFrame = this.m_currFrame;
-            this.m_currFrame = DateTime.Now;
+            m_lastFrame = m_currFrame;
+            m_currFrame = DateTime.Now;
         }
 
         public new void Start()
         {
-            this.ResetTimer();
+            ResetTimer();
             base.Start();
         }
 
         private void ElapsedEvent(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (this.AutoReset)
-            {
-                this.ResetTimer();
-            }
+            if (AutoReset) { ResetTimer(); }
         }
 
         private void ResetTimer()
         {
-            this.m_startTime = DateTime.Now;
-            this.m_endTime = m_startTime.AddMilliseconds(this.Interval);
-            this.m_lastFrame = this.m_currFrame = this.m_startTime;
+            m_startTime = DateTime.Now;
+            m_endTime = m_startTime.AddMilliseconds(Interval);
+            m_lastFrame = m_currFrame = m_startTime;
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,8 @@ using Microsoft.UI.Xaml.Hosting;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
+
+using GamifiedInputApp.Minigames;
 
 namespace GamifiedInputApp
 {
@@ -32,15 +35,47 @@ namespace GamifiedInputApp
         {
             this.InitializeComponent();
             Results.Visibility = Visibility.Collapsed;
+            PopulateMinigames();
 
             rootVisual = Compositor.CreateContainerVisual();
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
-
-            MinigamePicker.Items.Add("All");
-            MinigamePicker.SelectedIndex = 0;
-
             gameCore = new GameCore(rootVisual);
             gameCore.Results += GameCore_GoToResults;
+        }
+
+        private void PopulateMinigames()
+        {
+            const string baseNamespace = "GamifiedInputApp.Minigames";
+            string[] basePath = baseNamespace.Split('.');
+
+            TreeViewNode rootNode = new TreeViewNode() { Content = "Minigames", IsExpanded = true };
+
+            IEnumerable<Type> minigameTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type =>
+                (type.Namespace?.StartsWith(baseNamespace)).GetValueOrDefault() &&
+                (type.GetInterface(typeof(IMinigame).Name) != null));
+
+            foreach (Type minigameType in minigameTypes)
+            {
+                IMinigame minigame = (IMinigame)Activator.CreateInstance(minigameType);
+
+                IEnumerable<string> contentLabels = minigameType.Namespace.Split('.').Skip(basePath.Length);
+                TreeViewNode currentNode = rootNode;
+                foreach (object contentLabel in contentLabels)
+                {
+                    try
+                    {
+                        currentNode = currentNode.Children.First(node => contentLabel.Equals(node.Content));
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        currentNode.Children.Add(currentNode = new TreeViewNode() { Content = contentLabel, IsExpanded = true });
+                    }
+                }
+
+                currentNode.Children.Add(currentNode = new TreeViewNode() { Content = minigame.Info });
+            }
+
+            MinigamePicker.RootNodes.Add(rootNode);
         }
 
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
@@ -51,13 +86,17 @@ namespace GamifiedInputApp
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            Menu.Visibility = Visibility.Collapsed;
-            gameCore.Run();
-        }
-
-        private void MinigamePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
+            try
+            {
+                gameCore.Run(MinigamePicker.SelectedNodes
+                    .Where(node => node.Content is MinigameInfo)
+                    .Select(node => (MinigameInfo)node.Content));
+                Menu.Visibility = Visibility.Collapsed;
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private void GoToMenuButton_Click(object sender, RoutedEventArgs e)
