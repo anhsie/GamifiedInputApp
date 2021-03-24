@@ -48,6 +48,32 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\LetterTiles\letter_A.png" />
+    <Content Include="Images\LetterTiles\letter_B.png" />
+    <Content Include="Images\LetterTiles\letter_C.png" />
+    <Content Include="Images\LetterTiles\letter_D.png" />
+    <Content Include="Images\LetterTiles\letter_E.png" />
+    <Content Include="Images\LetterTiles\letter_F.png" />
+    <Content Include="Images\LetterTiles\letter_G.png" />
+    <Content Include="Images\LetterTiles\letter_H.png" />
+    <Content Include="Images\LetterTiles\letter_I.png" />
+    <Content Include="Images\LetterTiles\letter_J.png" />
+    <Content Include="Images\LetterTiles\letter_K.png" />
+    <Content Include="Images\LetterTiles\letter_L.png" />
+    <Content Include="Images\LetterTiles\letter_M.png" />
+    <Content Include="Images\LetterTiles\letter_N.png" />
+    <Content Include="Images\LetterTiles\letter_O.png" />
+    <Content Include="Images\LetterTiles\letter_P.png" />
+    <Content Include="Images\LetterTiles\letter_Q.png" />
+    <Content Include="Images\LetterTiles\letter_R.png" />
+    <Content Include="Images\LetterTiles\letter_S.png" />
+    <Content Include="Images\LetterTiles\letter_T.png" />
+    <Content Include="Images\LetterTiles\letter_U.png" />
+    <Content Include="Images\LetterTiles\letter_V.png" />
+    <Content Include="Images\LetterTiles\letter_W.png" />
+    <Content Include="Images\LetterTiles\letter_X.png" />
+    <Content Include="Images\LetterTiles\letter_Y.png" />
+    <Content Include="Images\LetterTiles\letter_Z.png" />
     <Content Include="Images\SplashScreen.scale-200.png" />
     <Content Include="Images\LockScreenLogo.scale-200.png" />
     <Content Include="Images\Square150x150Logo.scale-200.png" />
@@ -77,6 +103,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
       <ExcludeAssets>all</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectReunion.Foundation">
+      <Version>0.5.0-prerelease</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
       <ExcludeAssets>all</ExcludeAssets>

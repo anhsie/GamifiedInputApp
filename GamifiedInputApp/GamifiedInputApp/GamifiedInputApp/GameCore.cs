@@ -34,14 +34,6 @@ namespace GamifiedInputApp
     class GameCore
     {
         private const double MAX_FPS = 60;
-        public static List<IMinigame> Minigames { get; private set; }
-
-        static GameCore()
-        {
-            Minigames = new List<IMinigame>();
-            Minigames.Add(new DummyMinigame());
-            Minigames.Add(new GestureRecognizerMinigame()); 
-        }
 
         public delegate void ResultsEventHandler(object sender, ResultsEventArgs e);
         public event ResultsEventHandler Results;
@@ -55,7 +47,9 @@ namespace GamifiedInputApp
         {
             m_context.State = GameState.Start;
             m_context.Timer = new GameTimer();
+            m_context.Timer.StepFrames = true;
             m_context.Timer.AutoReset = false;
+
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
 
@@ -63,22 +57,21 @@ namespace GamifiedInputApp
             m_loopTimer.Tick += GameLoop;
         }
 
-        public void Run()
+        public void Run(IEnumerable<MinigameInfo> minigames)
         {
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
-
-            // TODO: filter by selected minigames
-            foreach (IMinigame minigame in Minigames)
+            foreach (MinigameInfo info in minigames)
             {
-                m_minigameQueue.Enqueue(minigame);
+                m_minigameQueue.Enqueue(info.Minigame);
+                Console.WriteLine("Queueing minigame: " + info.Name);
             }
+            if (m_minigameQueue.Count == 0) { throw new ArgumentException("No miningames selected"); }
 
             // start game
             m_context.State = GameState.Start;
             m_loopTimer.Start();
         }
-
 
         protected void GameLoop(Object source, object e)
         {
@@ -87,7 +80,7 @@ namespace GamifiedInputApp
             switch (m_context.State)
             {
                 case GameState.Start:
-                    if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames selected");
+                    if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames available");
 
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
@@ -99,8 +92,6 @@ namespace GamifiedInputApp
                     m_context.State = GameState.Play;
                     break;
                 case GameState.Play:
-                    if (m_minigameQueue.Count == 0) throw new MissingMemberException("No minigames available");
-
                     // update minigame
                     this.UpdateMinigame();
                     break;
@@ -123,26 +114,23 @@ namespace GamifiedInputApp
 
             if (state == MinigameState.Play && m_context.Timer.Finished)
             {
-                state = MinigameState.Fail;
+                state = MinigameState.Fail; // fail when out of time
             }
 
-            if (state == MinigameState.Pass)
+            if (state != MinigameState.Play)
             {
                 current.End(m_context, state);
                 m_context.Timer.Stop();
 
-                m_minigameQueue.Dequeue();
-                m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
-            }
-            else if (state == MinigameState.Fail)
-            {
-                current.End(m_context, state);
-                m_context.Timer.Stop();
-                m_context.State = GameState.Results;
-            }
-            else
-            {
-                // continue play
+                if (state == MinigameState.Pass)
+                {
+                    m_minigameQueue.Dequeue();
+                    m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                }
+                else //if (state == MinigameState.Fail)
+                {
+                    m_context.State = GameState.Results;
+                }
             }
         }
     }
