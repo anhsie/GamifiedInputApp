@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Composition;
+using Microsoft.UI.Input.Experimental;
 using System;
 using System.Numerics;
 
@@ -7,9 +8,9 @@ namespace GamifiedInputApp.Minigames.Sample
     class DummyMinigame : IMinigame
     {
         private SpriteVisual m_sprite;
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.All);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.None);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual)
+        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
             this.Setup(rootVisual); // Setup game board
 

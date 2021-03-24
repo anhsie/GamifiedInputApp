@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -32,6 +33,7 @@ namespace GamifiedInputApp
     {
         GameCore gameCore;
         ContainerVisual rootVisual;
+        private ObservableCollection<MinigameItem> DataSource;
 
         public MainWindow()
         {
@@ -54,34 +56,40 @@ namespace GamifiedInputApp
             const string baseNamespace = "GamifiedInputApp.Minigames";
             string[] basePath = baseNamespace.Split('.');
 
-            TreeViewNode rootNode = new TreeViewNode() { Content = "Minigames", IsExpanded = true };
+            DataSource = new ObservableCollection<MinigameItem>();
 
+            // get minigame types (in the baseNamespace and implementing IMinigame)
             IEnumerable<Type> minigameTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type =>
                 (type.Namespace?.StartsWith(baseNamespace)).GetValueOrDefault() &&
                 (type.GetInterface(typeof(IMinigame).Name) != null));
 
+            // populate the TreeView with each minigame
             foreach (Type minigameType in minigameTypes)
             {
                 IMinigame minigame = (IMinigame)Activator.CreateInstance(minigameType);
 
+                // get the content labels based on the namespace, skipping the baseNamespace
+                // e.g. "GamifiedInputApp.Minigames.Gesture.Holding" would be \Gesture\Holding in the treeview
                 IEnumerable<string> contentLabels = minigameType.Namespace.Split('.').Skip(basePath.Length);
-                TreeViewNode currentNode = rootNode;
+                ObservableCollection<MinigameItem> currentNode = DataSource;
                 foreach (object contentLabel in contentLabels)
                 {
                     try
                     {
-                        currentNode = currentNode.Children.First(node => contentLabel.Equals(node.Content));
+                        // find child with this label
+                        currentNode = currentNode.First(node => contentLabel.Equals(node.Content)).Children;
                     }
                     catch (InvalidOperationException)
                     {
-                        currentNode.Children.Add(currentNode = new TreeViewNode() { Content = contentLabel, IsExpanded = true });
+                        // no child with this label, add one
+                        MinigameItem newItem = new MinigameItem() { Content = contentLabel };
+                        currentNode.Add(newItem); currentNode = newItem.Children;
                     }
                 }
 
-                currentNode.Children.Add(currentNode = new TreeViewNode() { Content = minigame.Info });
+                // add minigame node
+                currentNode.Add(new MinigameItem() { Content = minigame.Info });
             }
-
-            MinigamePicker.RootNodes.Add(rootNode);
         }
 
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
@@ -94,13 +102,15 @@ namespace GamifiedInputApp
         {
             try
             {
+                // run selected minigames
                 gameCore.Run(MinigamePicker.SelectedNodes
-                    .Where(node => node.Content is MinigameInfo)
-                    .Select(node => (MinigameInfo)node.Content));
+                    .Where(node => ((node.Content as MinigameItem)?.IsMinigame).GetValueOrDefault())
+                    .Select(node => (node.Content as MinigameItem).Info));
                 Menu.Visibility = Visibility.Collapsed;
             }
-            catch (ArgumentException ex)
+            catch (InvalidOperationException ex)
             {
+                // no minigames selected
                 Console.WriteLine(ex.ToString());
             }
         }
@@ -109,6 +119,36 @@ namespace GamifiedInputApp
         {
             Results.Visibility = Visibility.Collapsed;
             Menu.Visibility = Visibility.Visible;
+        }
+    }
+
+    public class MinigameItem
+    {
+        public object Content { get; set; }
+        public bool IsMinigame { get { return Content is MinigameInfo; } }
+        public MinigameInfo Info { get { return Content as MinigameInfo; } }
+        public ObservableCollection<MinigameItem> Children { get; set; } = new ObservableCollection<MinigameItem>();
+
+        public Visibility MouseVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Mouse); } }
+        public Visibility TouchVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Touch); } }
+        public Visibility PenVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Pen); } }
+        public Visibility KeyVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Keyboard); } }
+
+        private Visibility GetDeviceVisibility(SupportedDeviceTypes deviceType)
+        {
+            return Info.Devices.HasFlag(deviceType) ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    class MinigameTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate CategoryTemplate { get; set; }
+        public DataTemplate MinigameTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            MinigameItem minigameItem = (MinigameItem)item;
+            return (minigameItem.Content is MinigameInfo) ? MinigameTemplate : CategoryTemplate;
         }
     }
 }
