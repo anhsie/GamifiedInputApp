@@ -16,7 +16,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
-//using Microsoft.Windows.Sdk;
+using Microsoft.UI.Hosting.Experimental;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -33,6 +33,10 @@ namespace GamifiedInputApp
     {
         GameCore gameCore;
         ContainerVisual rootVisual;
+        NativeWindowHelper nativeWindow;
+        ExpDesktopWindowBridge desktopBridge;
+        Compositor compositor;
+        ContentHelper content;
         private ObservableCollection<MinigameItem> DataSource;
 
         public MainWindow()
@@ -46,9 +50,14 @@ namespace GamifiedInputApp
             gameCore = new GameCore(rootVisual);
             gameCore.Results += GameCore_GoToResults;
 
-            //var hwnd = new HWND(this.GetWindowHandle());
-            //PInvoke.ShowWindow(hwnd, (SHOW_WINDOW_CMD)3);
-            //PInvoke.CreateWindowEx(WINDOWS_EX_STYLE.WS_EX_APPWINDOW, );
+            //nativeWindow = new NativeWindowHelper();
+            //nativeWindow.Show();
+
+            //compositor = new Compositor();
+            //desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+
+            //content = new ContentHelper(compositor);
+            //desktopBridge.Connect(content.Content, content.InputSite);
         }
 
         private void PopulateMinigames()
