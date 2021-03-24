@@ -4,6 +4,7 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 
 using GamifiedInputApp.Minigames;
+using Microsoft.UI.Input.Experimental;
 
 namespace GamifiedInputApp
 {
@@ -40,6 +41,7 @@ namespace GamifiedInputApp
 
         private GameContext m_context;
         private ContainerVisual m_rootVisual;
+        private ExpInputSite m_inputSite;
         private Queue<IMinigame> m_minigameQueue;
         private DispatcherTimer m_loopTimer;
 
@@ -52,6 +54,7 @@ namespace GamifiedInputApp
 
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
+            // TODO: create inputsite via GetOrCreateForContent
 
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
             m_loopTimer.Tick += GameLoop;
@@ -66,7 +69,7 @@ namespace GamifiedInputApp
                 m_minigameQueue.Enqueue(info.Minigame);
                 Console.WriteLine("Queueing minigame: " + info.Name);
             }
-            if (m_minigameQueue.Count == 0) { throw new ArgumentException("No miningames selected"); }
+            if (m_minigameQueue.Count == 0) { throw new InvalidOperationException("No miningames selected"); }
 
             // start game
             m_context.State = GameState.Start;
@@ -84,7 +87,7 @@ namespace GamifiedInputApp
 
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
-                    current.Start(m_context, m_rootVisual);
+                    current.Start(m_context, m_rootVisual, m_inputSite);
 
                     // start timer
                     m_context.Timer.Interval = 2000;

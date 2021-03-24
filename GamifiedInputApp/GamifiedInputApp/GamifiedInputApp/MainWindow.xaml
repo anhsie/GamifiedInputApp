@@ -8,9 +8,43 @@
     mc:Ignorable="d">
 
     <Grid x:Name="Root">
+        <Grid.Resources>
+            <DataTemplate x:Key="CategoryTemplate" x:DataType="local:MinigameItem">
+                <TreeViewItem ItemsSource="{x:Bind Children}">
+                    <TextBlock Text="{x:Bind Content}"/>
+                </TreeViewItem>
+            </DataTemplate>
+            <DataTemplate x:Key="MinigameTemplate" x:DataType="local:MinigameItem">
+                <TreeViewItem>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Bind Info}" HorizontalAlignment="Stretch" Grid.Column="0"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
+                            <Image Width="20" Source="Images/DeviceTypes/mouse.png" Visibility="{x:Bind MouseVisibility}"/>
+                            <Image Width="20" Source="Images/DeviceTypes/touch.png" Visibility="{x:Bind TouchVisibility}"/>
+                            <Image Width="20" Source="Images/DeviceTypes/pen.png" Visibility="{x:Bind PenVisibility}"/>
+                            <Image Width="20" Source="Images/DeviceTypes/key.png" Visibility="{x:Bind KeyVisibility}"/>
+                        </StackPanel>
+                    </Grid>
+                </TreeViewItem>
+            </DataTemplate>
+            <local:MinigameTemplateSelector x:Key="MinigameTemplateSelector"
+                CategoryTemplate="{StaticResource CategoryTemplate}" MinigameTemplate="{StaticResource MinigameTemplate}" />
+        </Grid.Resources>
         <StackPanel x:Name="Menu" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TreeView x:Name="MinigamePicker" MinWidth="345" MaxHeight="400" Margin="10,10,10,10" 
-                      HorizontalAlignment="Center" VerticalAlignment="Top" SelectionMode="Multiple" />
+            <TreeView x:Name="MinigamePicker" MinWidth="345" MaxHeight="400" Margin="10,10,10,10"
+                      HorizontalAlignment="Center" VerticalAlignment="Top" SelectionMode="Multiple"
+                      ItemsSource="{x:Bind DataSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="True" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </TreeView.ItemContainerStyle>
+            </TreeView>
             <Button x:Name="StartButton" Click="startButton_Click">Start</Button>
         </StackPanel>
         <StackPanel x:Name="Results" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
