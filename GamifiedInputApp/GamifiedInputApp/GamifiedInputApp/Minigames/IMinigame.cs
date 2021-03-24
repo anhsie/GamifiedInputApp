@@ -9,7 +9,9 @@ namespace GamifiedInputApp.Minigames
         Touch = PointerDeviceType.Touch,
         Pen = PointerDeviceType.Pen,
         Pointer, // Touch + Pen
-        All, // Mouse + Touch + Pen
+        Spatial, // Mouse + Touch + Pen
+        Keyboard, // Keyboard
+        All, // Mouse + Touch + Pen + Keyboard
     }
 
     enum MinigameState

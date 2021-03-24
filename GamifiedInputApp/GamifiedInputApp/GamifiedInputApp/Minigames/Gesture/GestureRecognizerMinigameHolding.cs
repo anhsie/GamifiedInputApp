@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace GamifiedInputApp.Minigames
+namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigame : IMinigame
+    class GestureRecognizerMinigameHolding : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
@@ -21,6 +21,8 @@ namespace GamifiedInputApp.Minigames
 
         // Minigame variables
         private System.Diagnostics.Stopwatch stopwatch;
+
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizerHolding", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
