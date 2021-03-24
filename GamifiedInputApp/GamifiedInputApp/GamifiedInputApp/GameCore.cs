@@ -66,7 +66,7 @@ namespace GamifiedInputApp
                 m_minigameQueue.Enqueue(info.Minigame);
                 Console.WriteLine("Queueing minigame: " + info.Name);
             }
-            if (m_minigameQueue.Count == 0) { throw new ArgumentException("No miningames selected"); }
+            if (m_minigameQueue.Count == 0) { throw new InvalidOperationException("No miningames selected"); }
 
             // start game
             m_context.State = GameState.Start;

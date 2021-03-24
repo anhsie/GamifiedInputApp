@@ -1,27 +1,32 @@
 ﻿using Microsoft.UI.Composition;
+using System;
+using System.Text;
 using Windows.Devices.Input;
 
 namespace GamifiedInputApp.Minigames
 {
-    enum SupportedDeviceTypes
+    [Flags]
+    public enum SupportedDeviceTypes
     {
-        Mouse = PointerDeviceType.Mouse,
-        Touch = PointerDeviceType.Touch,
-        Pen = PointerDeviceType.Pen,
-        Pointer, // Touch + Pen
-        Spatial, // Mouse + Touch + Pen
-        Keyboard, // Keyboard
-        All, // Mouse + Touch + Pen + Keyboard
+        None    = 0b0000,
+        Mouse   = 0b0001,
+        Touch   = 0b0010,
+        Pen     = 0b0100,
+        Keyboard= 0b1000,
+
+        Pointer = Touch | Pen,
+        Spatial = Touch | Pen | Mouse,
+        All     = Touch | Pen | Mouse | Keyboard,
     }
 
-    enum MinigameState
+    public enum MinigameState
     {
         Play,
         Pass,
         Fail
     }
 
-    class MinigameInfo
+    public class MinigameInfo
     {
         public MinigameInfo(IMinigame minigame, string name, SupportedDeviceTypes devices)
         {
@@ -30,14 +35,14 @@ namespace GamifiedInputApp.Minigames
             Devices = devices;
         }
 
-        public override string ToString() { return Name; }
+        public override string ToString() => Name;
 
         public readonly IMinigame Minigame;
         public readonly string Name; // name of miningame (e.g. "PressTheEnterKey! (KeyDown/KeyUp)")
         public readonly SupportedDeviceTypes Devices; // supported devices
     }
 
-    interface IMinigame
+    public interface IMinigame
     {
         internal MinigameInfo Info { get; }
 

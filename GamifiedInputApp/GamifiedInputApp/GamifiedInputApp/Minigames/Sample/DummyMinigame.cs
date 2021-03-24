@@ -7,7 +7,7 @@ namespace GamifiedInputApp.Minigames.Sample
     class DummyMinigame : IMinigame
     {
         private SpriteVisual m_sprite;
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.All);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.None);
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual)
         {

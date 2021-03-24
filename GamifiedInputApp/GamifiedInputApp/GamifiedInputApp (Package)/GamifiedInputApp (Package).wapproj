@@ -48,6 +48,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\DeviceTypes\key.png" />
+    <Content Include="Images\DeviceTypes\mouse.png" />
+    <Content Include="Images\DeviceTypes\pen.png" />
+    <Content Include="Images\DeviceTypes\touch.png" />
     <Content Include="Images\LetterTiles\letter_A.png" />
     <Content Include="Images\LetterTiles\letter_B.png" />
     <Content Include="Images\LetterTiles\letter_C.png" />
