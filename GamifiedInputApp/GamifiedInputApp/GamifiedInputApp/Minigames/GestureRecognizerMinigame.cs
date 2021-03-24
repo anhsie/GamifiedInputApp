@@ -1,9 +1,12 @@
 ﻿
+using Microsoft.System;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
+using Microsoft.UI.Hosting.Experimental;
 using Microsoft.UI.Input.Experimental; 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics; 
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -60,9 +63,18 @@ namespace GamifiedInputApp.Minigames
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
             sprite.Size = new Vector2(100, 100);
 
+            rootVisual.Children.InsertAtTop(sprite);
+
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
+
+            var process = Process.GetCurrentProcess();
+            var handle = process.MainWindowHandle;
+            
+
+            //var bridge = ExpCoreWindowBridge.Create(compositor);
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
+            //bridge.Connect(content, inputsite); 
 
             // PointerInputObserver
             pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputsite);
@@ -73,8 +85,6 @@ namespace GamifiedInputApp.Minigames
             gestureRecognizer = new ExpGestureRecognizer();
             gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
             gestureRecognizer.Tapped += Tapped;
-
-            rootVisual.Children.InsertAtTop(sprite);
         }
 
         //
