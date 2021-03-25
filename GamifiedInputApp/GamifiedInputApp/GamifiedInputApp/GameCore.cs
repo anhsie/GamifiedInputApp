@@ -70,6 +70,10 @@ namespace GamifiedInputApp
             nativeWindow = new NativeWindowHelper();
             nativeWindow.Show();
             desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+            PInvoke.User32.ShowWindow(
+                NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
+                PInvoke.User32.WindowShowStyle.SW_SHOW);
+            desktopBridge.FillTopLevelWindow = true;
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -97,16 +101,10 @@ namespace GamifiedInputApp
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
 
-                    var content = ExpCompositionContent.Create(compositor);
-                    var minigameRoot = compositor.CreateContainerVisual();
-                    var spriteVisual = compositor.CreateSpriteVisual();
-                    minigameRoot.Children.InsertAtTop(spriteVisual);
-                    spriteVisual.Size = new System.Numerics.Vector2(100, 100);
-                    spriteVisual.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(1, 0, 1, 1));
-                    content.Root = spriteVisual;
-                    var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
-                    desktopBridge.Connect(content, minigameInputSite);
-                    current.Start(m_context, minigameRoot, minigameInputSite);
+                    // create new content object and place it into the desktop window bridge
+                    ContentHelper contentHelper = new ContentHelper(compositor);
+                    desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
+                    current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
                     m_context.Timer.Interval = 2000;
