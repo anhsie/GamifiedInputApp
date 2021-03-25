@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml;
 
 using GamifiedInputApp.Minigames;
 using Microsoft.UI.Input.Experimental;
+using Microsoft.UI.Hosting.Experimental;
+using Microsoft.UI.Composition.Experimental;
 
 namespace GamifiedInputApp
 {
@@ -40,10 +42,13 @@ namespace GamifiedInputApp
         public event ResultsEventHandler Results;
 
         private GameContext m_context;
+        private ExpDesktopWindowBridge desktopBridge;
         private ContainerVisual m_rootVisual;
         private ExpInputSite m_inputSite;
+        private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
         private DispatcherTimer m_loopTimer;
+        private NativeWindowHelper nativeWindow;
 
         public GameCore(ContainerVisual rootVisual)
         {
@@ -54,10 +59,18 @@ namespace GamifiedInputApp
 
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
+            compositor = rootVisual.Compositor;
             // TODO: create inputsite via GetOrCreateForContent
 
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
             m_loopTimer.Tick += GameLoop;
+        }
+
+        public void SetDesktopBridge(ExpDesktopWindowBridge desktopBridge)
+        {
+            this.desktopBridge = desktopBridge;
+            var content = new ContentHelper(compositor);
+            desktopBridge.Connect(content.Content, content.InputSite);
         }
 
         public void Run(IEnumerable<MinigameInfo> minigames)
@@ -87,7 +100,33 @@ namespace GamifiedInputApp
 
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
+                    //var content = new ContentHelper(compositor);
+                    //desktopBridge.Connect(content.Content, content.InputSite);
                     current.Start(m_context, m_rootVisual, m_inputSite);
+
+
+                    nativeWindow = new NativeWindowHelper();
+                    nativeWindow.Show();
+                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+                    var content = ExpCompositionContent.Create(compositor);
+                    var minigameRoot = compositor.CreateContainerVisual();
+                    var spriteVisual = compositor.CreateSpriteVisual();
+                    minigameRoot.Children.InsertAtTop(spriteVisual);
+                    spriteVisual.Size = new System.Numerics.Vector2(100, 100);
+                    spriteVisual.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(1, 0, 1, 1));
+                    content.Root = spriteVisual;
+                    var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
+                    desktopBridge.Connect(content, minigameInputSite);
+                    current.Start(m_context, minigameRoot, minigameInputSite);
+
+
+
+                    //var content = ExpCompositionContent.Create(compositor);
+                    //var minigameRoot = compositor.CreateContainerVisual();
+                    //content.Root = minigameRoot;
+                    //var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
+                    //desktopBridge.Connect(content, minigameInputSite);
+                    //current.Start(m_context, minigameRoot, minigameInputSite);
 
                     // start timer
                     m_context.Timer.Interval = 2000;
@@ -101,6 +140,8 @@ namespace GamifiedInputApp
                 case GameState.Results:
                     // stop timer
                     m_loopTimer.Stop();
+
+                    nativeWindow.Destroy();
 
                     // invoke results event
                     Results?.Invoke(this, new ResultsEventArgs(m_context));

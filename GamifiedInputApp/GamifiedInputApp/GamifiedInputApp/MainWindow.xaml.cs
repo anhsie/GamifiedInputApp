@@ -23,6 +23,7 @@ using Microsoft.UI.Hosting.Experimental;
 
 using GamifiedInputApp.Minigames;
 using System.Diagnostics;
+using Microsoft.UI.Composition.Experimental;
 
 namespace GamifiedInputApp
 {
@@ -47,17 +48,6 @@ namespace GamifiedInputApp
 
             rootVisual = Compositor.CreateContainerVisual();
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
-            gameCore = new GameCore(rootVisual);
-            gameCore.Results += GameCore_GoToResults;
-
-            //nativeWindow = new NativeWindowHelper();
-            //nativeWindow.Show();
-
-            //compositor = new Compositor();
-            //desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
-
-            //content = new ContentHelper(compositor);
-            //desktopBridge.Connect(content.Content, content.InputSite);
         }
 
         private void PopulateMinigames()
@@ -111,6 +101,12 @@ namespace GamifiedInputApp
         {
             try
             {
+                if (gameCore == null)
+                {
+                    gameCore = new GameCore(rootVisual);
+                    gameCore.Results += GameCore_GoToResults;
+                }
+
                 // run selected minigames
                 gameCore.Run(MinigamePicker.SelectedNodes
                     .Where(node => ((node.Content as MinigameItem)?.IsMinigame).GetValueOrDefault())
