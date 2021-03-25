@@ -38,7 +38,7 @@ namespace GamifiedInputApp
         ExpDesktopWindowBridge desktopBridge;
         ContentHelper content;
         private ObservableCollection<MinigameItem> DataSource;
-        private Dictionary<SupportedDeviceTypes, ObservableCollection<MinigameItem>> MinigamesByDevice;
+        private IList<object> MinigameItems;
 
         public MainWindow()
         {
@@ -60,13 +60,6 @@ namespace GamifiedInputApp
             PenInputPicker.DataContext = SupportedDeviceTypes.Pen;
             KeyInputPicker.DataContext = SupportedDeviceTypes.Keyboard;
 
-            MinigamesByDevice = new Dictionary<SupportedDeviceTypes, ObservableCollection<MinigameItem>>();
-            foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
-            {
-                SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
-                MinigamesByDevice.Add(device, new ObservableCollection<MinigameItem>());
-            }
-
             // Create a root "Select All" node
             DataSource = new ObservableCollection<MinigameItem>();
             MinigameItem rootNode = new MinigameItem() { Content = "Select All" };
@@ -76,6 +69,7 @@ namespace GamifiedInputApp
             IEnumerable<Type> minigameTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type =>
                 (type.Namespace?.StartsWith(baseNamespace)).GetValueOrDefault() &&
                 (type.GetInterface(typeof(IMinigame).Name) != null));
+            MinigameItems = new List<object>(minigameTypes.Count());
 
             // populate the TreeView with each minigame
             foreach (Type minigameType in minigameTypes)
@@ -101,16 +95,7 @@ namespace GamifiedInputApp
                 }
                 // add minigame node
                 currentNode.Children.Add(currentNode = new MinigameItem() { Content = minigame.Info });
-
-                // record it by device type
-                foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
-                {
-                    SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
-                    if (minigame.Info.Devices.HasFlag(device))
-                    {
-                        MinigamesByDevice[device].Add(currentNode);
-                    }
-                }
+                MinigameItems.Add(currentNode);
             }
         }
 
@@ -131,9 +116,9 @@ namespace GamifiedInputApp
                 }
 
                 // run selected minigames
-                gameCore.Run(MinigamePicker.SelectedNodes
-                    .Where(node => ((node.Content as MinigameItem)?.IsMinigame).GetValueOrDefault())
-                    .Select(node => (node.Content as MinigameItem).Info));
+                gameCore.Run(MinigamePicker.SelectedItems
+                    .Where(item => (item as MinigameItem).IsMinigame)
+                    .Select(item => (item as MinigameItem).Info));
                 Menu.Visibility = Visibility.Collapsed;
             }
             catch (InvalidOperationException ex)
@@ -148,24 +133,31 @@ namespace GamifiedInputApp
             Results.Visibility = Visibility.Collapsed;
             Menu.Visibility = Visibility.Visible;
         }
+
         private void InputPicker_Checked(object sender, RoutedEventArgs e)
         {
             SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
-            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            IEnumerable<object> selected = MinigameItem.WhereDevice(MinigamePicker.SelectedItems, device);
+            IEnumerable<object> unselected = MinigameItem.WhereDevice(MinigameItems, device).Except(selected);
+
+            if (unselected.Count() > 0)
             {
-                MinigamePicker.SelectedItems.Add(minigame);
+                foreach (object item in unselected) { MinigamePicker.SelectedItems.Add(item); }
+                MinigamePicker_SelectionChanged(MinigamePicker, null);
             }
-            MinigamePicker_SelectionChanged(MinigamePicker, null);
         }
 
         private void InputPicker_Unchecked(object sender, RoutedEventArgs e)
         {
             SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
-            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            IEnumerable<object> selected = MinigameItem.WhereDevice(MinigamePicker.SelectedItems, device);
+
+            if (selected.Count() > 0)
             {
-                MinigamePicker.SelectedItems.Remove(minigame);
+                selected = new List<object>(selected); // clone selected out of MinigamePicker.SelectedItems
+                foreach (object item in selected) { MinigamePicker.SelectedItems.Remove(item); }
+                MinigamePicker_SelectionChanged(MinigamePicker, null);
             }
-            MinigamePicker_SelectionChanged(MinigamePicker, null);
         }
 
         private void InputPicker_Indeterminate(object sender, RoutedEventArgs e)
@@ -173,34 +165,22 @@ namespace GamifiedInputApp
             SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
             // If all options are selected, clicking the box will change it to its indeterminate state.
             // Instead, we want to uncheck all the boxes, so we do this programatically.
-            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            if (MinigameItem.CountDevice(MinigameItems, device) == MinigameItem.CountDevice(MinigamePicker.SelectedItems, device))
             {
-                if (!MinigamePicker.SelectedItems.Contains(minigame)) { return; }
+                (sender as CheckBox).IsChecked = false;
+                // This will cause InputPicker_Unchecked to be executed, which will trigger SelectionChanged.
             }
-            // This will cause InputPicker_Unchecked to be executed, so
-            // we don't need to uncheck the other boxes here.
-            (sender as CheckBox).IsChecked = false;
         }
 
         private void MinigamePicker_SelectionChanged(TreeView sender, object args)
         {
-            foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
+            foreach (CheckBox child in InputDevicePickers.Children.Where(child => child is CheckBox))
             {
                 SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
+                int selected = MinigameItem.CountDevice(MinigamePicker.SelectedItems, device);
+                int unselected = MinigameItem.CountDevice(MinigameItems, device) - selected;
 
-                CheckBox checkBox = child as CheckBox;
-                if (MinigamesByDevice[device].All(minigame => MinigamePicker.SelectedItems.Contains(minigame)))
-                {
-                    checkBox.IsChecked = true;
-                }
-                else if (MinigamesByDevice[device].Any(minigame => MinigamePicker.SelectedItems.Contains(minigame)))
-                {
-                    checkBox.IsChecked = null; // indeterminate
-                }
-                else
-                {
-                    checkBox.IsChecked = false;
-                }
+                child.IsChecked = (selected == 0) ? false : (unselected == 0) ? true : null;  // null for indeterminate
             }
         }
     }
@@ -217,10 +197,15 @@ namespace GamifiedInputApp
         public Visibility PenVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Pen); } }
         public Visibility KeyVisibility { get { return GetDeviceVisibility(SupportedDeviceTypes.Keyboard); } }
 
-        private Visibility GetDeviceVisibility(SupportedDeviceTypes deviceType)
-        {
-            return Info.Devices.HasFlag(deviceType) ? Visibility.Visible : Visibility.Collapsed;
-        }
+        public bool IsDevice(SupportedDeviceTypes deviceType) => IsMinigame && Info.Devices.HasFlag(deviceType);
+
+        private Visibility GetDeviceVisibility(SupportedDeviceTypes deviceType) =>
+            IsDevice(deviceType) ? Visibility.Visible : Visibility.Collapsed;
+
+        public static IEnumerable<object> WhereDevice(IEnumerable<object> list, SupportedDeviceTypes deviceType) =>
+            list.Where(item => ((item as MinigameItem)?.IsDevice(deviceType)).GetValueOrDefault());
+        public static int CountDevice(IEnumerable<object> list, SupportedDeviceTypes deviceType) =>
+            list.Count(item => ((item as MinigameItem)?.IsDevice(deviceType)).GetValueOrDefault());
     }
 
     class MinigameTemplateSelector : DataTemplateSelector
@@ -231,7 +216,7 @@ namespace GamifiedInputApp
         protected override DataTemplate SelectTemplateCore(object item)
         {
             MinigameItem minigameItem = (MinigameItem)item;
-            return (minigameItem.Content is MinigameInfo) ? MinigameTemplate : CategoryTemplate;
+            return (minigameItem.IsMinigame) ? MinigameTemplate : CategoryTemplate;
         }
     }
 }

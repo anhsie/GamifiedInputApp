@@ -1,7 +1,11 @@
-
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
-using Microsoft.UI.Input.Experimental; 
+using Microsoft.UI.Hosting.Experimental;
+using Microsoft.UI.Input.Experimental;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,32 +18,26 @@ namespace GamifiedInputApp.Minigames.Gesture
 {
     class Tap : IMinigame
     {
+        // UI Components
+        private ContainerVisual rootVisual; 
+        private VisualCollection sprites;
+
+        private CompositionSurfaceBrush ship;
+        private CompositionSurfaceBrush shipWithAlien; 
+
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
-        private SpriteVisual sprite;
-        private ContainerVisual rootVisual;
-
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 15; 
+        private const int TOTAL_TAPS_TO_WIN = 10; 
         private int tapCounter;
-        private bool tapLeft;
-        
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Left/Right Tap", SupportedDeviceTypes.Spatial);
+
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
-        {
-            this.Cleanup();
+        { 
             return; 
-        }
-
-        private void Cleanup()
-        {
-            this.rootVisual.Children.RemoveAll();
-            sprite = null;
-            pointerInputObserver = null;
-            gestureRecognizer = null;
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -51,33 +49,72 @@ namespace GamifiedInputApp.Minigames.Gesture
         {
             MinigameState result = MinigameState.Play;
 
-            if (tapCounter >= TOTAL_TAPS_TO_WIN)
+            if (gameContext.Timer.Finished && (tapCounter < TOTAL_TAPS_TO_WIN))
             {
-                result = MinigameState.Pass;
+                result = MinigameState.Fail;
             }
             else if (gameContext.Timer.Finished)
             {
-                result = MinigameState.Fail; 
+                result = MinigameState.Pass; 
             }
 
             return result; 
         }
 
-        public void Setup(ContainerVisual rootVisual)
+        // 
+        // Helper Functions
+        //
+
+        private void Setup(ContainerVisual rootVisual)
         {
-            tapCounter = 0;
-            tapLeft = true;
+            tapCounter = 0; 
+            this.SetupUI(rootVisual);
+            this.SetupInputAPI();
+        }
 
-            // Generate visual for tap game.
-            this.rootVisual = rootVisual;
-            Compositor compositor = rootVisual.Compositor;
-            sprite = compositor.CreateSpriteVisual();
-            sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
-            sprite.Size = new Vector2(100, 100);
+        private void SetupUI(ContainerVisual root)
+        {
+            var shipImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen.png"));
+            var shipWithAlienImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen_manned.png")); 
+            
+            Compositor comp = root.Compositor;
 
+            this.ship = comp.CreateSurfaceBrush();
+            this.ship.Surface = shipImg;
+
+            this.shipWithAlien = comp.CreateSurfaceBrush();
+            this.shipWithAlien.Surface = shipWithAlienImg; 
+
+            int size = 100; 
+            int x = 100;
+            int y = 100;
+
+            for (int i = 1; i < 10; i++)
+            {
+                SpriteVisual sprite = comp.CreateSpriteVisual();
+                sprite.Size = new Vector2(size, size);
+                sprite.Offset = new Vector3(x, y, 0);
+                sprite.Brush = this.ship;
+                root.Children.InsertAtTop(sprite);
+
+                if ((i % 3) == 0)
+                {
+                    x += 100;
+                    y = 100;
+                }
+                else { y += 100; }
+            }
+
+            var rand = new Random().Next(1, 10);
+            SpriteVisual spriteVisual = (SpriteVisual) root.Children.ElementAt(rand);
+            spriteVisual.Brush = this.shipWithAlien;
+        }
+
+        private void SetupInputAPI()
+        {
+            var compositor = new Compositor(); 
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
-            content.Root = sprite;
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
 
             // PointerInputObserver
@@ -87,11 +124,8 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
             gestureRecognizer.Tapped += Tapped;
-            gestureRecognizer.RightTapped += RightTapped;
-
-            rootVisual.Children.InsertAtTop(sprite);
         }
 
         //
@@ -101,7 +135,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint); 
+            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)
@@ -112,34 +146,8 @@ namespace GamifiedInputApp.Minigames.Gesture
         // GestureRecognizer
         private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            if (tapLeft)
-            {
-                ProcessCorrectTap();
-            }
-        }
-
-        
-
-        private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
-        {
-            if (!tapLeft)
-            {
-                ProcessCorrectTap();
-            }
-        }
-
-        private void ProcessCorrectTap()
-        {
+            // TODO: Spawn visual in new location inside the game window. 
             ++tapCounter;
-            tapLeft = (uint)new Random().Next(0, 1) == 0;
-            if (tapLeft)
-            {
-
-            } else
-            {
-
-            }
-            throw new NotImplementedException();
         }
     }
 }
