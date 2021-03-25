@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,24 +9,24 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
+        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper()
         {
-            var windowClass = PInvoke.User32.WNDCLASSEX.Create();
-            windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
-            
             string className = "Minigame Window Class";
+
             unsafe
             {
-                windowClass.lpfnWndProc += WindowProcedure;
+                PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
+                windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
+                windowClass.lpfnWndProc = WindowProcedure;
                 fixed (char* c = className)
                 {
                     windowClass.lpszClassName = c;
                 }
+                PInvoke.User32.RegisterClassEx(ref windowClass);
             }
-
-            PInvoke.User32.RegisterClassEx(ref windowClass);
 
             m_hwnd = PInvoke.User32.CreateWindowEx(
                     PInvoke.User32.WindowStylesEx.WS_EX_OVERLAPPEDWINDOW,
@@ -44,7 +45,12 @@ namespace GamifiedInputApp
 
         public void Show()
         {
-            PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOW);
+            PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOWDEFAULT);
+        }
+
+        public void Destroy()
+        {
+            PInvoke.User32.DestroyWindow(m_hwnd);
         }
 
         public Microsoft.UI.WindowId WindowId
@@ -59,7 +65,8 @@ namespace GamifiedInputApp
 
         static unsafe IntPtr WindowProcedure(IntPtr hWnd, PInvoke.User32.WindowMessage msg, void* wParam, void* lParam)
         {
-            return PInvoke.User32.DefWindowProc(hWnd, msg, new IntPtr(wParam), new IntPtr(lParam));
+            Debugger.Log(1, "Windows Message", msg.ToString());
+            return PInvoke.User32.DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
         }
     }
 }

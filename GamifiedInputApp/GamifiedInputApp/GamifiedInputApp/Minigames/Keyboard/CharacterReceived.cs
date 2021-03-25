@@ -17,6 +17,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
+        private ExpInputSite inputSite;
         private Compositor compositor;
         private UInt32 ansIndex;
 
@@ -27,6 +28,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
             this.rootVisual = rootVisual;
+            this.inputSite = inputSite;
             compositor = rootVisual.Compositor;
             this.Setup(rootVisual, inputSite); // Setup game board
 
@@ -98,12 +100,14 @@ namespace GamifiedInputApp.Minigames.Keyboard
                 keyboardInput.CharacterReceived += CharacterReceivedEventHandler;
             }
 
-            ansIndex = (uint)new Random().Next(0, 25);
+            var random = new Random();
+            ansIndex = (uint) random.Next(0, 25);
 
             // Setup game board here
             letterVisual = compositor.CreateSpriteVisual();
             letterVisual.Size = new Vector2(100, 100);
-            letterVisual.Offset = new Vector3(100,0,0);
+            // TODO: Random X based on size of window
+            letterVisual.Offset = new Vector3(random.Next(0,500),0,0);
             var surfaceBrush = compositor.CreateSurfaceBrush();
             surfaceBrush.Surface = letterImages[(int)ansIndex];
             letterVisual.Brush = surfaceBrush;
@@ -127,6 +131,12 @@ namespace GamifiedInputApp.Minigames.Keyboard
         {
             letterVisual = null;
             rootVisual.Children.RemoveAll();
+
+            if (inputSite != null)
+            {
+                var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
+                keyboardInput.CharacterReceived -= CharacterReceivedEventHandler;
+            }
         }
 
         private void CharacterReceivedEventHandler(object sender, Windows.UI.Core.CharacterReceivedEventArgs args)
