@@ -8,7 +8,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 {
     class Dragging : IMinigame
     {
-        private const float SPRITE_SPEED = 1.0f;
+        private const float SPRITE_SPEED = 0.01f;
 
         // Input API
         private ExpPointerInputObserver pointerInputObserver;
@@ -57,6 +57,12 @@ namespace GamifiedInputApp.Minigames.Gesture
             m_ball.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
             m_basket = compositor.CreateSpriteVisual();
             m_basket.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xF0, 0xB0, 0x00));
+            m_ball.Size = new Vector2(50, 50);
+            m_ball.Offset = new Vector3(100, 0, 0);
+            m_basket.Size = new Vector2(50, 50);
+            m_basket.Offset = new Vector3(200, 100, 0);
+            rootVisual.Children.InsertAtTop(m_ball);
+            rootVisual.Children.InsertAtTop(m_basket);
 
             var content = ExpCompositionContent.Create(compositor);
             content.Root = m_basket;
@@ -72,8 +78,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
             gestureRecognizer.Dragging += Drag;
 
-            rootVisual.Children.InsertAtTop(m_ball);
-            rootVisual.Children.InsertAtTop(m_basket);
+            
 
         }
 

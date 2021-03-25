@@ -30,7 +30,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 10; 
+        private const int TOTAL_TAPS_TO_WIN = 3; 
         private int tapCounter;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Tap", SupportedDeviceTypes.Spatial);
