@@ -36,7 +36,6 @@ namespace GamifiedInputApp
         ContainerVisual rootVisual;
         NativeWindowHelper nativeWindow;
         ExpDesktopWindowBridge desktopBridge;
-        Compositor compositor;
         ContentHelper content;
         private ObservableCollection<MinigameItem> DataSource;
         private Dictionary<SupportedDeviceTypes, ObservableCollection<MinigameItem>> MinigamesByDevice;
