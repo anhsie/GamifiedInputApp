@@ -9,7 +9,6 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
-        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper()
@@ -18,7 +17,7 @@ namespace GamifiedInputApp
 
             unsafe
             {
-                windowClass = PInvoke.User32.WNDCLASSEX.Create();
+                PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
                 windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
                 windowClass.lpfnWndProc = WindowProcedure;
                 fixed (char* c = className)
