@@ -20,64 +20,72 @@ namespace GamifiedInputApp.Minigames.Gesture
     {
         // UI Components
         private ContainerVisual rootVisual; 
-        private VisualCollection sprites;
 
         private CompositionSurfaceBrush ship;
-        private CompositionSurfaceBrush shipWithAlien; 
+        private CompositionSurfaceBrush shipWithAlien;
 
         // Input API
-        private ExpPointerInputObserver pointerInputObserver; 
+        private ExpIndependentPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 3; 
+
+        private const int TOTAL_TAPS_TO_WIN = 5;
         private int tapCounter;
+        MinigameState state;
+
+        private int? currentAlienIndex; 
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
-        { 
+        {
+            this.Cleanup(); 
             return; 
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
-            this.Setup(rootVisual); 
+            this.rootVisual = rootVisual;
+            this.Setup(); 
         }
 
         public MinigameState Update(in GameContext gameContext)
         {
-            MinigameState result = MinigameState.Play;
+            // TODO: Every 3 or 5 seconds spawn an alien in new location
 
             if (gameContext.Timer.Finished && (tapCounter < TOTAL_TAPS_TO_WIN))
             {
-                result = MinigameState.Fail;
+                this.state = MinigameState.Fail;
             }
             else if (gameContext.Timer.Finished)
             {
-                result = MinigameState.Pass; 
+                this.state = MinigameState.Pass; 
             }
 
-            return result; 
+            return state; 
         }
 
         // 
         // Helper Functions
         //
 
-        private void Setup(ContainerVisual rootVisual)
+        private void Setup()
         {
-            tapCounter = 0; 
-            this.SetupUI(rootVisual);
+            tapCounter = 0;
+
+            this.SetupUI();
             this.SetupInputAPI();
         }
 
-        private void SetupUI(ContainerVisual root)
+        private void SetupUI()
         {
+            this.state = MinigameState.Play;
+
             var shipImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen.png"));
             var shipWithAlienImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen_manned.png")); 
             
-            Compositor comp = root.Compositor;
+            Compositor comp = this.rootVisual.Compositor;
 
             this.ship = comp.CreateSurfaceBrush();
             this.ship.Surface = shipImg;
@@ -95,7 +103,7 @@ namespace GamifiedInputApp.Minigames.Gesture
                 sprite.Size = new Vector2(size, size);
                 sprite.Offset = new Vector3(x, y, 0);
                 sprite.Brush = this.ship;
-                root.Children.InsertAtTop(sprite);
+                this.rootVisual.Children.InsertAtTop(sprite);
 
                 if ((i % 3) == 0)
                 {
@@ -105,27 +113,65 @@ namespace GamifiedInputApp.Minigames.Gesture
                 else { y += 100; }
             }
 
-            var rand = new Random().Next(1, 10);
-            SpriteVisual spriteVisual = (SpriteVisual) root.Children.ElementAt(rand);
-            spriteVisual.Brush = this.shipWithAlien;
+            this.SpawnAlien();
         }
 
         private void SetupInputAPI()
         {
-            var compositor = new Compositor(); 
-            // Create InputSite
-            var content = ExpCompositionContent.Create(compositor);
-            var inputsite = ExpInputSite.GetOrCreateForContent(content);
-
-            // PointerInputObserver
-            pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputsite);
-            pointerInputObserver.PointerPressed += OnPointerPressed;
-            pointerInputObserver.PointerReleased += OnPointerReleased;
+            this.SetupIndependentPointerInputObserver(); 
 
             // GestureRecognizer
-            gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
-            gestureRecognizer.Tapped += Tapped;
+            this.gestureRecognizer = new ExpGestureRecognizer();
+            this.gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
+            this.gestureRecognizer.Tapped += Tapped;
+        }
+
+        private void SetupIndependentPointerInputObserver()
+        {
+            // Find visual that has alien.
+            SpriteVisual alienVisual = null; 
+            foreach (SpriteVisual visual in this.rootVisual.Children)
+            {
+                if (visual.Brush == this.shipWithAlien)
+                {
+                    alienVisual = visual; 
+                }
+            }
+
+            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                alienVisual, 
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse | 
+                Windows.UI.Core.CoreInputDeviceTypes.Touch | 
+                Windows.UI.Core.CoreInputDeviceTypes.Pen);
+            
+            this.pointerInputObserver.PointerPressed += OnPointerPressed;
+            this.pointerInputObserver.PointerReleased += OnPointerReleased;
+        }
+
+        private void SpawnAlien()
+        {
+            var rand = new Random().Next(1, 10);
+
+            if (currentAlienIndex != null)
+            {
+                // Undo alien from current location
+                SpriteVisual undoVisual = (SpriteVisual)this.rootVisual.Children.ElementAt((int)this.currentAlienIndex);
+                undoVisual.Brush = this.ship;
+            }
+
+            // Draw alien in new location. 
+            SpriteVisual spriteVisual = (SpriteVisual) this.rootVisual.Children.ElementAt(rand);
+            spriteVisual.Brush = this.shipWithAlien;
+
+            this.currentAlienIndex = rand;
+        }
+
+        private void Cleanup()
+        {
+            this.pointerInputObserver.Dispose();
+            this.rootVisual.Children.RemoveAll();
+            this.ship.Dispose();
+            this.shipWithAlien.Dispose();
         }
 
         //
@@ -146,8 +192,15 @@ namespace GamifiedInputApp.Minigames.Gesture
         // GestureRecognizer
         private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            // TODO: Spawn visual in new location inside the game window. 
+            this.SpawnAlien();
+            this.SetupIndependentPointerInputObserver(); // Is there a better way to do this? 
+
             ++tapCounter;
+
+            if (tapCounter == TOTAL_TAPS_TO_WIN)
+            {
+                state = MinigameState.Pass; 
+            }
         }
     }
 }

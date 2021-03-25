@@ -69,11 +69,6 @@ namespace GamifiedInputApp
         {
             nativeWindow = new NativeWindowHelper();
             nativeWindow.Show();
-            desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
-            PInvoke.User32.ShowWindow(
-                NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
-                PInvoke.User32.WindowShowStyle.SW_SHOW);
-            desktopBridge.FillTopLevelWindow = true;
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -92,7 +87,7 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
-
+            nativeWindow.Show();
             switch (m_context.State)
             {
                 case GameState.Start:
@@ -101,13 +96,19 @@ namespace GamifiedInputApp
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
 
+                    // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+                    PInvoke.User32.ShowWindow(
+                        NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
+                        PInvoke.User32.WindowShowStyle.SW_SHOW);
+                    desktopBridge.FillTopLevelWindow = true;
                     // create new content object and place it into the desktop window bridge
                     ContentHelper contentHelper = new ContentHelper(compositor);
                     desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
                     current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
-                    m_context.Timer.Interval = 2000;
+                    m_context.Timer.Interval = 5000;
                     m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;
@@ -148,6 +149,7 @@ namespace GamifiedInputApp
                 {
                     m_minigameQueue.Dequeue();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                    m_context.Score += 1;
                 }
                 else //if (state == MinigameState.Fail)
                 {
