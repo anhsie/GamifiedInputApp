@@ -9,6 +9,7 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
+        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper()
@@ -45,6 +46,11 @@ namespace GamifiedInputApp
         public void Show()
         {
             PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOWDEFAULT);
+        }
+
+        public void Destroy()
+        {
+            PInvoke.User32.DestroyWindow(m_hwnd);
         }
 
         public Microsoft.UI.WindowId WindowId
