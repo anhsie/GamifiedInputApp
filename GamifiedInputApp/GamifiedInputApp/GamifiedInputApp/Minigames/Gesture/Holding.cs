@@ -12,7 +12,7 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameHolding : IMinigame
+    class Holding : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
@@ -20,7 +20,8 @@ namespace GamifiedInputApp.Minigames.Gesture
 
 
         // Minigame variables
-        private SpriteVisual sprite; 
+        private SpriteVisual sprite;
+        private ContainerVisual rootVisual;
         private System.Diagnostics.Stopwatch stopwatch;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Holding", SupportedDeviceTypes.Spatial);
@@ -35,6 +36,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         {
             pointerInputObserver = null;
             gestureRecognizer = null;
+            rootVisual.Children.RemoveAll();
             sprite = null;
             stopwatch = null;
 
@@ -74,6 +76,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             stopwatch = new System.Diagnostics.Stopwatch();
 
             // Generate visual for tap game.
+            this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
             sprite = compositor.CreateSpriteVisual();
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));

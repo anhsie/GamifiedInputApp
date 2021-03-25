@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameDragging : IMinigame
+    class DoubleTap : IMinigame
     {
         private const float SPRITE_SPEED = 1.0f;
 
@@ -14,11 +14,13 @@ namespace GamifiedInputApp.Minigames.Gesture
         private ExpPointerInputObserver pointerInputObserver;
         private ExpGestureRecognizer gestureRecognizer;
 
-        // Game variables
-        private SpriteVisual m_ball;
-        private SpriteVisual m_basket;
+        // Minigame variables
+        private ContainerVisual rootVisual;
+        private SpriteVisual m_sprite;
+        private int tapCounter;
+        private const int TOTAL_TAPS_TO_WIN = 5;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dragging", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "DoubleTap", SupportedDeviceTypes.Spatial);
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
@@ -28,15 +30,19 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         public MinigameState Update(in GameContext gameContext)
-        {
-            this.Animate(gameContext); // Animate game board
+        {            
+            MinigameState result = MinigameState.Play;
 
-            // Do update logic for minigame
-            // If ball has not hit y coordinate equal to the basket, play
-            // If ball has hit y coordinate and ball's centerpoint location is in between basket offset and basket offset + width, then pass
-            // else fail. 
+            if (tapCounter >= TOTAL_TAPS_TO_WIN)
+            {
+                result = MinigameState.Pass;
+            }
+            else if (gameContext.Timer.Finished)
+            {
+                result = MinigameState.Fail;
+            }
 
-            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
+            return result;
         }
 
         public void End(in GameContext gameContext, in MinigameState finalState)
@@ -50,14 +56,19 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void Setup(ContainerVisual rootVisual)
         {
             // Setup game board here
-            Compositor compositor = rootVisual.Compositor;
-            m_ball = compositor.CreateSpriteVisual();
-            m_ball.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
-            m_basket = compositor.CreateSpriteVisual();
-            m_basket.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xF0, 0xB0, 0x00));
+            tapCounter = 0;
 
+            // Generate visual for tap game.
+            this.rootVisual = rootVisual;
+            Compositor compositor = rootVisual.Compositor;
+            m_sprite = compositor.CreateSpriteVisual();
+            m_sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
+            m_sprite.Size = new Vector2(100, 100);
+            //Specify random offset within game window.
+
+            // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
-            content.Root = m_basket;
+            content.Root = m_sprite;
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
 
             // PointerInputObserver
@@ -67,12 +78,10 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
-            gestureRecognizer.Dragging += Dragging;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.DoubleTap;
+            gestureRecognizer.Tapped += Tapped;
 
-            rootVisual.Children.InsertAtTop(m_ball);
-            rootVisual.Children.InsertAtTop(m_basket);
-
+            rootVisual.Children.InsertAtTop(m_sprite);
         }
 
         // PointerInputObserver
@@ -87,25 +96,24 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         // GestureRecognizer
-        private void Dragging(object sender, ExpDraggingEventArgs eventArgs)
+        private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            
+            MoveSprite();
+            ++tapCounter;           
         }
 
-        private void Animate(in GameContext gameContext)
+        private void MoveSprite()
         {
-            // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime;
-
-            Vector3 offset = m_ball.Offset;
-            offset.Y += (dt * SPRITE_SPEED);
-            m_ball.Offset = offset;
+            // Create new random offset within game window and place sprite there.
+            return;
         }
-        
+
         private void Cleanup()
         {
-            m_ball = null;
-            m_basket = null;
+            rootVisual.Children.RemoveAll();
+            m_sprite = null;
+            pointerInputObserver = null;
+            gestureRecognizer = null;
         }
     }
 }

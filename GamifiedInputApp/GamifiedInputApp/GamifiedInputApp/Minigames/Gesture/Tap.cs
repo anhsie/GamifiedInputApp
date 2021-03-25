@@ -12,13 +12,14 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameTap : IMinigame
+    class Tap : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
         private SpriteVisual sprite;
+        private ContainerVisual rootVisual;
 
         // Minigame variables
         private const int TOTAL_TAPS_TO_WIN = 15; 
@@ -29,7 +30,16 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            this.Cleanup();
             return; 
+        }
+
+        private void Cleanup()
+        {
+            this.rootVisual.Children.RemoveAll();
+            sprite = null;
+            pointerInputObserver = null;
+            gestureRecognizer = null;
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -59,6 +69,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             tapLeft = true;
 
             // Generate visual for tap game.
+            this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
             sprite = compositor.CreateSpriteVisual();
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
@@ -103,18 +114,32 @@ namespace GamifiedInputApp.Minigames.Gesture
         {
             if (tapLeft)
             {
-                //tapLeft = randomized true or false. Also change spriteVisual to indicate which direction
-                ++tapCounter;
+                ProcessCorrectTap();
             }
         }
+
+        
 
         private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
         {
             if (!tapLeft)
             {
-                //tapLeft = randomized true or false. Also change spriteVisual to indicate which direction
-                ++tapCounter;
+                ProcessCorrectTap();
             }
+        }
+
+        private void ProcessCorrectTap()
+        {
+            ++tapCounter;
+            tapLeft = (uint)new Random().Next(0, 1) == 0;
+            if (tapLeft)
+            {
+
+            } else
+            {
+
+            }
+            throw new NotImplementedException();
         }
     }
 }
