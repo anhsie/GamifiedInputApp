@@ -149,6 +149,7 @@ namespace GamifiedInputApp
                 {
                     m_minigameQueue.Dequeue();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                    m_context.Score += 1;
                 }
                 else //if (state == MinigameState.Fail)
                 {
