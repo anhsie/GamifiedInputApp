@@ -95,7 +95,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
             gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Hold;
-            gestureRecognizer.Holding += Holding;
+            gestureRecognizer.Holding += OnHolding;
 
             rootVisual.Children.InsertAtTop(sprite);
         }
@@ -116,7 +116,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         // GestureRecognizer
-        private void Holding(object sender, ExpHoldingEventArgs eventArgs)
+        private void OnHolding(object sender, ExpHoldingEventArgs eventArgs)
         {
             switch (eventArgs.HoldingState)
             {
