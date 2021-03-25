@@ -20,30 +20,34 @@ namespace GamifiedInputApp.Minigames.Gesture
     {
         // UI Components
         private ContainerVisual rootVisual; 
-        private VisualCollection sprites; // TODO: Delete this its not being used
 
         private CompositionSurfaceBrush ship;
-        private CompositionSurfaceBrush shipWithAlien; 
+        private CompositionSurfaceBrush shipWithAlien;
 
         // Input API
+        private ExpInputSite inputSite; 
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 10; 
+        private const int TOTAL_TAPS_TO_WIN = 5; 
         private int tapCounter;
-        MinigameState state; 
+        MinigameState state;
+
+        private int? currentAlienIndex; 
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
-        { 
+        {
             return; 
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
-            this.Setup(rootVisual); 
+            this.rootVisual = rootVisual;
+            this.inputSite = inputSite; 
+            this.Setup(); 
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -66,10 +70,9 @@ namespace GamifiedInputApp.Minigames.Gesture
         // Helper Functions
         //
 
-        private void Setup(ContainerVisual rootVisual)
+        private void Setup()
         {
             tapCounter = 0;
-            this.rootVisual = rootVisual; 
 
             this.SetupUI();
             this.SetupInputAPI();
@@ -115,27 +118,33 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         private void SetupInputAPI()
         {
-            var compositor = new Compositor(); 
-            // Create InputSite
-            var content = ExpCompositionContent.Create(compositor);
-            var inputsite = ExpInputSite.GetOrCreateForContent(content);
-
             // PointerInputObserver
-            pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputsite);
-            pointerInputObserver.PointerPressed += OnPointerPressed;
-            pointerInputObserver.PointerReleased += OnPointerReleased;
+            this.pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(this.inputSite);
+            this.pointerInputObserver.PointerPressed += OnPointerPressed;
+            this.pointerInputObserver.PointerReleased += OnPointerReleased;
 
             // GestureRecognizer
-            gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
-            gestureRecognizer.Tapped += Tapped;
+            this.gestureRecognizer = new ExpGestureRecognizer();
+            this.gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
+            this.gestureRecognizer.Tapped += Tapped;
         }
 
         private void SpawnAlien()
         {
             var rand = new Random().Next(1, 10);
+
+            if (currentAlienIndex != null)
+            {
+                // Undo alien from previous location
+                SpriteVisual undoVisual = (SpriteVisual)this.rootVisual.Children.ElementAt((int)this.currentAlienIndex);
+                undoVisual.Brush = this.ship;
+            }
+
+            // Draw alien in new location. 
             SpriteVisual spriteVisual = (SpriteVisual) this.rootVisual.Children.ElementAt(rand);
             spriteVisual.Brush = this.shipWithAlien;
+
+            this.currentAlienIndex = rand;
         }
 
         //
