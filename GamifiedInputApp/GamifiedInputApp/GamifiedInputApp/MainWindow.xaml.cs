@@ -35,7 +35,6 @@ namespace GamifiedInputApp
         ContainerVisual rootVisual;
         NativeWindowHelper nativeWindow;
         ExpDesktopWindowBridge desktopBridge;
-        Compositor compositor;
         ContentHelper content;
         private ObservableCollection<MinigameItem> DataSource;
 
@@ -53,10 +52,9 @@ namespace GamifiedInputApp
             //nativeWindow = new NativeWindowHelper();
             //nativeWindow.Show();
 
-            //compositor = new Compositor();
-            //desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+            //desktopBridge = ExpDesktopWindowBridge.Create(Compositor, nativeWindow.WindowId);
 
-            //content = new ContentHelper(compositor);
+            //content = new ContentHelper(Compositor);
             //desktopBridge.Connect(content.Content, content.InputSite);
         }
 
