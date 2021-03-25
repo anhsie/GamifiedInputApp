@@ -17,16 +17,27 @@ namespace GamifiedInputApp.Minigames.Gesture
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
-        private SpriteVisual sprite;
+
 
         // Minigame variables
+        private SpriteVisual sprite; 
         private System.Diagnostics.Stopwatch stopwatch;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizerHolding", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            return; 
+            this.Cleanup(); // Cleanup game board
+            return;
+        }
+
+        private void Cleanup()
+        {
+            pointerInputObserver = null;
+            gestureRecognizer = null;
+            sprite = null;
+            stopwatch = null;
+
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -36,9 +47,10 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public MinigameState Update(in GameContext gameContext)
         {
+            Animate(gameContext);
             MinigameState result = MinigameState.Play;
 
-            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 10)
+            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 100)
             {
                 result = MinigameState.Pass;
             }
@@ -48,6 +60,12 @@ namespace GamifiedInputApp.Minigames.Gesture
             }
 
             return result; 
+        }
+
+        private void Animate(in GameContext gameContext)
+        {
+            float dt = (float)gameContext.Timer.DeltaTime;
+            throw new NotImplementedException();
         }
 
         public void Setup(ContainerVisual rootVisual)

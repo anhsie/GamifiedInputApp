@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
 using Microsoft.UI.Input.Experimental; 
@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace GamifiedInputApp.Minigames.Gesture
+namespace GamifiedInputApp.Minigames
 {
-    class GestureRecognizerMinigame : IMinigame
+    class GestureRecognizerMinigameHolding : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
@@ -23,7 +23,8 @@ namespace GamifiedInputApp.Minigames.Gesture
         // Minigame variables
         private const int TOTAL_TAPS_TO_WIN = 15; 
         private int tapCounter;
-
+        private bool tapLeft;
+        
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
@@ -40,13 +41,13 @@ namespace GamifiedInputApp.Minigames.Gesture
         {
             MinigameState result = MinigameState.Play;
 
-            if (gameContext.Timer.Finished && (tapCounter < TOTAL_TAPS_TO_WIN))
+            if (tapCounter >= TOTAL_TAPS_TO_WIN)
             {
-                result = MinigameState.Fail;
+                result = MinigameState.Pass;
             }
             else if (gameContext.Timer.Finished)
             {
-                result = MinigameState.Pass; 
+                result = MinigameState.Fail; 
             }
 
             return result; 
@@ -55,6 +56,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         public void Setup(ContainerVisual rootVisual)
         {
             tapCounter = 0;
+            tapLeft = true;
 
             // Generate visual for tap game.
             Compositor compositor = rootVisual.Compositor;
@@ -64,6 +66,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
+            content.Root = sprite;
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
 
             // PointerInputObserver
@@ -73,8 +76,9 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
             gestureRecognizer.Tapped += Tapped;
+            gestureRecognizer.RightTapped += RightTapped;
 
             rootVisual.Children.InsertAtTop(sprite);
         }
@@ -97,7 +101,20 @@ namespace GamifiedInputApp.Minigames.Gesture
         // GestureRecognizer
         private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            ++tapCounter;  
+            if (tapLeft)
+            {
+                //tapLeft = randomized true or false. Also change spriteVisual to indicate which direction
+                ++tapCounter;
+            }
+        }
+
+        private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
+        {
+            if (!tapLeft)
+            {
+                //tapLeft = randomized true or false. Also change spriteVisual to indicate which direction
+                ++tapCounter;
+            }
         }
     }
 }
