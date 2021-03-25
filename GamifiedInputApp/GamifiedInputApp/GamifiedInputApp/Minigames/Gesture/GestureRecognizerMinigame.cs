@@ -1,9 +1,11 @@
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
+using Microsoft.UI.Hosting.Experimental;
 using Microsoft.UI.Input.Experimental;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,23 +19,25 @@ namespace GamifiedInputApp.Minigames.Gesture
     class GestureRecognizerMinigame : IMinigame
     {
         // UI Components
-        private Window window;
         private ContainerVisual rootVisual; 
-        private SpriteVisual sprite; // TODO: Might need a list of these ?
+        private VisualCollection sprites;
+
+        private CompositionSurfaceBrush ship;
+        private CompositionSurfaceBrush shipWithAlien; 
 
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 15; 
+        private const int TOTAL_TAPS_TO_WIN = 10; 
         private int tapCounter;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
-        {
-            window.Close();
+        { 
+            return; 
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -57,61 +61,58 @@ namespace GamifiedInputApp.Minigames.Gesture
             return result; 
         }
 
-        //
-        // Event Handlers 
-        //
-
-        // PointerInputObserver
-        private void OnPointerPressed(object sender, ExpPointerEventArgs args)
-        {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint); 
-        }
-
-        private void OnPointerReleased(object sender, ExpPointerEventArgs args)
-        {
-            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
-        }
-
-        // GestureRecognizer
-        private void Tapped(object sender, ExpTappedEventArgs eventArgs)
-        {
-            ++tapCounter;  
-        }
-
         // 
         // Helper Functions
         //
 
         private void Setup(ContainerVisual rootVisual)
         {
-            tapCounter = 0;
-
-            this.UISetup();
-            this.InputAPISetup(); 
+            tapCounter = 0; 
+            this.SetupUI(rootVisual);
+            this.SetupInputAPI();
         }
 
-        private void UISetup()
+        private void SetupUI(ContainerVisual root)
         {
-            window = new Window();
+            var shipImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen.png"));
+            var shipWithAlienImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Alien/ShipGreen_manned.png")); 
+            
+            Compositor comp = root.Compositor;
 
-            var compositor = window.Compositor;
-            rootVisual = compositor.CreateContainerVisual();
+            this.ship = comp.CreateSurfaceBrush();
+            this.ship.Surface = shipImg;
 
-            UIElement rootElement = new Grid();
-            ElementCompositionPreview.SetElementChildVisual(rootElement, rootVisual);
+            this.shipWithAlien = comp.CreateSurfaceBrush();
+            this.shipWithAlien.Surface = shipWithAlienImg; 
 
-            sprite = compositor.CreateSpriteVisual();
-            sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
-            sprite.Size = new Vector2(100, 100);
+            int size = 100; 
+            int x = 100;
+            int y = 100;
 
-            rootVisual.Children.InsertAtTop(sprite);
-            window.Activate(); 
+            for (int i = 1; i < 10; i++)
+            {
+                SpriteVisual sprite = comp.CreateSpriteVisual();
+                sprite.Size = new Vector2(size, size);
+                sprite.Offset = new Vector3(x, y, 0);
+                sprite.Brush = this.ship;
+                root.Children.InsertAtTop(sprite);
+
+                if ((i % 3) == 0)
+                {
+                    x += 100;
+                    y = 100;
+                }
+                else { y += 100; }
+            }
+
+            var rand = new Random().Next(1, 10);
+            SpriteVisual spriteVisual = (SpriteVisual) root.Children.ElementAt(rand);
+            spriteVisual.Brush = this.shipWithAlien;
         }
 
-        private void InputAPISetup()
+        private void SetupInputAPI()
         {
-            var compositor = sprite.Compositor; 
-
+            var compositor = new Compositor(); 
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
@@ -125,6 +126,28 @@ namespace GamifiedInputApp.Minigames.Gesture
             gestureRecognizer = new ExpGestureRecognizer();
             gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
             gestureRecognizer.Tapped += Tapped;
+        }
+
+        //
+        // Event Handlers 
+        //
+
+        // PointerInputObserver
+        private void OnPointerPressed(object sender, ExpPointerEventArgs args)
+        {
+            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+        }
+
+        private void OnPointerReleased(object sender, ExpPointerEventArgs args)
+        {
+            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+        }
+
+        // GestureRecognizer
+        private void Tapped(object sender, ExpTappedEventArgs eventArgs)
+        {
+            // TODO: Spawn visual in new location inside the game window. 
+            ++tapCounter;
         }
     }
 }
