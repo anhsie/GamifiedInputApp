@@ -69,11 +69,6 @@ namespace GamifiedInputApp
         {
             nativeWindow = new NativeWindowHelper();
             nativeWindow.Show();
-            //desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
-            //PInvoke.User32.ShowWindow(
-            //    NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
-            //    PInvoke.User32.WindowShowStyle.SW_SHOW);
-            //desktopBridge.FillTopLevelWindow = true;
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
