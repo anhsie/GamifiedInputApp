@@ -12,21 +12,34 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameHolding : IMinigame
+    class Holding : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
-        private SpriteVisual sprite;
+
 
         // Minigame variables
+        private SpriteVisual sprite;
+        private ContainerVisual rootVisual;
         private System.Diagnostics.Stopwatch stopwatch;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizerHolding", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Holding", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            return; 
+            this.Cleanup(); // Cleanup game board
+            return;
+        }
+
+        private void Cleanup()
+        {
+            pointerInputObserver = null;
+            gestureRecognizer = null;
+            rootVisual.Children.RemoveAll();
+            sprite = null;
+            stopwatch = null;
+
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -36,9 +49,10 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public MinigameState Update(in GameContext gameContext)
         {
+            Animate(gameContext);
             MinigameState result = MinigameState.Play;
 
-            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 10)
+            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 100)
             {
                 result = MinigameState.Pass;
             }
@@ -50,12 +64,19 @@ namespace GamifiedInputApp.Minigames.Gesture
             return result; 
         }
 
+        private void Animate(in GameContext gameContext)
+        {
+            float dt = (float)gameContext.Timer.DeltaTime;
+            throw new NotImplementedException();
+        }
+
         public void Setup(ContainerVisual rootVisual)
         {
             // Setup timer
             stopwatch = new System.Diagnostics.Stopwatch();
 
             // Generate visual for tap game.
+            this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
             sprite = compositor.CreateSpriteVisual();
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
@@ -74,7 +95,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
             gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Hold;
-            gestureRecognizer.Holding += Holding;
+            gestureRecognizer.Holding += HoldingEventHandler;
 
             rootVisual.Children.InsertAtTop(sprite);
         }
@@ -95,7 +116,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         // GestureRecognizer
-        private void Holding(object sender, ExpHoldingEventArgs eventArgs)
+        private void HoldingEventHandler(object sender, ExpHoldingEventArgs eventArgs)
         {
             switch (eventArgs.HoldingState)
             {

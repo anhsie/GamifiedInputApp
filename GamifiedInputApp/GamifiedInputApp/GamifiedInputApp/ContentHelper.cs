@@ -14,7 +14,7 @@ namespace GamifiedInputApp
         Compositor m_compositor;
         ExpCompositionContent m_content;
         ExpInputSite m_inputSite;
-        ExpPointerInputObserver m_pointerInputObvserver;
+        ExpPointerInputObserver m_pointerInputObserver;
         
         SpriteVisual m_backgroundVisual;
         CompositionColorBrush m_redBrush;
@@ -34,8 +34,8 @@ namespace GamifiedInputApp
             m_content.Root = m_backgroundVisual;
 
             m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
-            m_pointerInputObvserver = ExpPointerInputObserver.CreateForInputSite(m_inputSite);
-            m_pointerInputObvserver.PointerPressed += M_pointerInputObvserver_PointerPressed;
+            m_pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(m_inputSite);
+            m_pointerInputObserver.PointerPressed += M_pointerInputObvserver_PointerPressed;
         }
 
         public ExpCompositionContent Content

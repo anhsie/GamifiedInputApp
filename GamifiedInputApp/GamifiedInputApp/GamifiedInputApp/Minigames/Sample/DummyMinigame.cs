@@ -45,6 +45,7 @@ namespace GamifiedInputApp.Minigames.Sample
             Compositor compositor = rootVisual.Compositor;
             m_sprite = compositor.CreateSpriteVisual();
             m_sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
+            m_sprite.Size = new Vector2(100, 100);
             rootVisual.Children.InsertAtTop(m_sprite);
         }
 
