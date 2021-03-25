@@ -92,7 +92,7 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
-
+            nativeWindow.Show();
             switch (m_context.State)
             {
                 case GameState.Start:
@@ -107,7 +107,7 @@ namespace GamifiedInputApp
                     current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
-                    m_context.Timer.Interval = 2000;
+                    m_context.Timer.Interval = 5000;
                     m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;
