@@ -8,11 +8,12 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
+        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper()
         {
-            var windowClass = PInvoke.User32.WNDCLASSEX.Create();
+            windowClass = PInvoke.User32.WNDCLASSEX.Create();
             windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
             
             string className = "Minigame Window Class";
@@ -45,6 +46,11 @@ namespace GamifiedInputApp
         public void Show()
         {
             PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOW);
+        }
+
+        public void Destroy()
+        {
+            PInvoke.User32.DestroyWindow(m_hwnd);
         }
 
         public Microsoft.UI.WindowId WindowId
