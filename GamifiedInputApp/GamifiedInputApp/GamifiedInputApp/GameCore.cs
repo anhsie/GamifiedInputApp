@@ -69,11 +69,6 @@ namespace GamifiedInputApp
         {
             nativeWindow = new NativeWindowHelper();
             nativeWindow.Show();
-            desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
-            PInvoke.User32.ShowWindow(
-                NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
-                PInvoke.User32.WindowShowStyle.SW_SHOW);
-            desktopBridge.FillTopLevelWindow = true;
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -101,6 +96,12 @@ namespace GamifiedInputApp
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
 
+                    // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+                    PInvoke.User32.ShowWindow(
+                        NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
+                        PInvoke.User32.WindowShowStyle.SW_SHOW);
+                    desktopBridge.FillTopLevelWindow = true;
                     // create new content object and place it into the desktop window bridge
                     ContentHelper contentHelper = new ContentHelper(compositor);
                     desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
@@ -148,6 +149,7 @@ namespace GamifiedInputApp
                 {
                     m_minigameQueue.Dequeue();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                    m_context.Score += 1;
                 }
                 else //if (state == MinigameState.Fail)
                 {
