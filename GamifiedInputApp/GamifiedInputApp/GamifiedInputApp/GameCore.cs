@@ -81,6 +81,7 @@ namespace GamifiedInputApp
 
             // start game
             m_context.State = GameState.Start;
+            m_context.Score = 0;
             m_loopTimer.Start();
         }
 

@@ -18,7 +18,7 @@ namespace GamifiedInputApp
 
             unsafe
             {
-                PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
+                windowClass = PInvoke.User32.WNDCLASSEX.Create();
                 windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
                 windowClass.lpfnWndProc = WindowProcedure;
                 fixed (char* c = className)
