@@ -25,8 +25,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private CompositionSurfaceBrush shipWithAlien;
 
         // Input API
-        private ExpInputSite inputSite; 
-        private ExpPointerInputObserver pointerInputObserver; 
+        private ExpIndependentPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
@@ -40,13 +39,13 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            this.Cleanup(); 
             return; 
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
             this.rootVisual = rootVisual;
-            this.inputSite = inputSite; 
             this.Setup(); 
         }
 
@@ -118,15 +117,34 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         private void SetupInputAPI()
         {
-            // PointerInputObserver
-            this.pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(this.inputSite);
-            this.pointerInputObserver.PointerPressed += OnPointerPressed;
-            this.pointerInputObserver.PointerReleased += OnPointerReleased;
+            this.SetupIndependentPointerInputObserver(); 
 
             // GestureRecognizer
             this.gestureRecognizer = new ExpGestureRecognizer();
             this.gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
             this.gestureRecognizer.Tapped += Tapped;
+        }
+
+        private void SetupIndependentPointerInputObserver()
+        {
+            // Find visual that has alien.
+            SpriteVisual alienVisual = null; 
+            foreach (SpriteVisual visual in this.rootVisual.Children)
+            {
+                if (visual.Brush == this.shipWithAlien)
+                {
+                    alienVisual = visual; 
+                }
+            }
+
+            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                alienVisual, 
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse | 
+                Windows.UI.Core.CoreInputDeviceTypes.Touch | 
+                Windows.UI.Core.CoreInputDeviceTypes.Pen);
+            
+            this.pointerInputObserver.PointerPressed += OnPointerPressed;
+            this.pointerInputObserver.PointerReleased += OnPointerReleased;
         }
 
         private void SpawnAlien()
@@ -147,6 +165,14 @@ namespace GamifiedInputApp.Minigames.Gesture
             this.currentAlienIndex = rand;
         }
 
+        private void Cleanup()
+        {
+            this.pointerInputObserver.Dispose();
+            this.rootVisual.Dispose();
+            this.ship.Dispose();
+            this.shipWithAlien.Dispose();
+        }
+
         //
         // Event Handlers 
         //
@@ -165,7 +191,9 @@ namespace GamifiedInputApp.Minigames.Gesture
         // GestureRecognizer
         private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            this.SpawnAlien();  
+            this.SpawnAlien();
+            this.SetupIndependentPointerInputObserver(); // Is there a better way to do this? 
+
             ++tapCounter;
 
             if (tapCounter == TOTAL_TAPS_TO_WIN)
