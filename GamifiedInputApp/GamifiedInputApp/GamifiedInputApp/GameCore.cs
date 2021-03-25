@@ -60,21 +60,17 @@ namespace GamifiedInputApp
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
             compositor = rootVisual.Compositor;
-            // TODO: create inputsite via GetOrCreateForContent
 
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
             m_loopTimer.Tick += GameLoop;
         }
 
-        public void SetDesktopBridge(ExpDesktopWindowBridge desktopBridge)
-        {
-            this.desktopBridge = desktopBridge;
-            var content = new ContentHelper(compositor);
-            desktopBridge.Connect(content.Content, content.InputSite);
-        }
-
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
+            nativeWindow = new NativeWindowHelper();
+            nativeWindow.Show();
+            desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
             foreach (MinigameInfo info in minigames)
@@ -100,14 +96,7 @@ namespace GamifiedInputApp
 
                     // setup minigame
                     IMinigame current = m_minigameQueue.Peek();
-                    //var content = new ContentHelper(compositor);
-                    //desktopBridge.Connect(content.Content, content.InputSite);
-                    current.Start(m_context, m_rootVisual, m_inputSite);
 
-
-                    nativeWindow = new NativeWindowHelper();
-                    nativeWindow.Show();
-                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
                     var content = ExpCompositionContent.Create(compositor);
                     var minigameRoot = compositor.CreateContainerVisual();
                     var spriteVisual = compositor.CreateSpriteVisual();
@@ -118,15 +107,6 @@ namespace GamifiedInputApp
                     var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
                     desktopBridge.Connect(content, minigameInputSite);
                     current.Start(m_context, minigameRoot, minigameInputSite);
-
-
-
-                    //var content = ExpCompositionContent.Create(compositor);
-                    //var minigameRoot = compositor.CreateContainerVisual();
-                    //content.Root = minigameRoot;
-                    //var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
-                    //desktopBridge.Connect(content, minigameInputSite);
-                    //current.Start(m_context, minigameRoot, minigameInputSite);
 
                     // start timer
                     m_context.Timer.Interval = 2000;
