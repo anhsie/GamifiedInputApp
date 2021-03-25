@@ -6,31 +6,42 @@ using System.Numerics;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class DoubleTap : IMinigame
+    class LeftRightTap : IMinigame
     {
-        private const float SPRITE_SPEED = 1.0f;
-
-        // Input API
         private ExpPointerInputObserver pointerInputObserver;
         private ExpGestureRecognizer gestureRecognizer;
 
-        // Minigame variables
+        private SpriteVisual sprite;
         private ContainerVisual rootVisual;
-        private SpriteVisual m_sprite;
-        private int tapCounter;
-        private const int TOTAL_TAPS_TO_WIN = 5;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "DoubleTap", SupportedDeviceTypes.Spatial);
+        // Minigame variables
+        private const int TOTAL_TAPS_TO_WIN = 15;
+        private int tapCounter;
+        private bool tapLeft;
+
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Left/Right Tap", SupportedDeviceTypes.Spatial);
+
+        public void End(in GameContext gameContext, in MinigameState finalState)
+        {
+            this.Cleanup();
+            return;
+        }
+
+        private void Cleanup()
+        {
+            this.rootVisual.Children.RemoveAll();
+            sprite = null;
+            pointerInputObserver = null;
+            gestureRecognizer = null;
+        }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {
-            this.Setup(rootVisual); // Setup game board
-
-            // Do start logic for minigame
+            this.Setup(rootVisual);
         }
 
         public MinigameState Update(in GameContext gameContext)
-        {            
+        {
             MinigameState result = MinigameState.Play;
 
             if (tapCounter >= TOTAL_TAPS_TO_WIN)
@@ -45,30 +56,21 @@ namespace GamifiedInputApp.Minigames.Gesture
             return result;
         }
 
-        public void End(in GameContext gameContext, in MinigameState finalState)
+        public void Setup(ContainerVisual rootVisual)
         {
-            this.Cleanup(); // Cleanup game board
-
-            // Do cleanup logic for minigame
-        }
-
-
-        private void Setup(ContainerVisual rootVisual)
-        {
-            // Setup game board here
             tapCounter = 0;
+            tapLeft = true;
 
             // Generate visual for tap game.
             this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
-            m_sprite = compositor.CreateSpriteVisual();
-            m_sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
-            m_sprite.Size = new Vector2(100, 100);
-            //Specify random offset within game window.
+            sprite = compositor.CreateSpriteVisual();
+            sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
+            sprite.Size = new Vector2(100, 100);
 
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
-            content.Root = m_sprite;
+            content.Root = sprite;
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
 
             // PointerInputObserver
@@ -78,11 +80,16 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.DoubleTap;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
             gestureRecognizer.Tapped += Tapped;
+            gestureRecognizer.RightTapped += RightTapped;
 
-            rootVisual.Children.InsertAtTop(m_sprite);
+            rootVisual.Children.InsertAtTop(sprite);
         }
+
+        //
+        // Event Handlers 
+        //
 
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
@@ -98,22 +105,35 @@ namespace GamifiedInputApp.Minigames.Gesture
         // GestureRecognizer
         private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            MoveSprite();
-            ++tapCounter;           
+            if (tapLeft)
+            {
+                ProcessCorrectTap();
+            }
         }
 
-        private void MoveSprite()
+
+
+        private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
         {
-            // Create new random offset within game window and place sprite there.
-            return;
+            if (!tapLeft)
+            {
+                ProcessCorrectTap();
+            }
         }
 
-        private void Cleanup()
+        private void ProcessCorrectTap()
         {
-            rootVisual.Children.RemoveAll();
-            m_sprite = null;
-            pointerInputObserver = null;
-            gestureRecognizer = null;
+            ++tapCounter;
+            tapLeft = (uint)new Random().Next(0, 1) == 0;
+            if (tapLeft)
+            {
+
+            }
+            else
+            {
+
+            }
+            throw new NotImplementedException();
         }
     }
 }
