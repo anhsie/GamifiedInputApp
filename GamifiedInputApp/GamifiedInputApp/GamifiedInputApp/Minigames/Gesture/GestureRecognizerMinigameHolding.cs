@@ -23,7 +23,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private SpriteVisual sprite; 
         private System.Diagnostics.Stopwatch stopwatch;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizerHolding", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Holding", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {

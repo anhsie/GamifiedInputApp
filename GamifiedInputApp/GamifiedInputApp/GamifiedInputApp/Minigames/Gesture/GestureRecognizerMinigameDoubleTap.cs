@@ -4,7 +4,7 @@ using Microsoft.UI.Input.Experimental;
 using System;
 using System.Numerics;
 
-namespace GamifiedInputApp.Minigames
+namespace GamifiedInputApp.Minigames.Gesture
 {
     class GestureRecognizerMinigameDoubleTap : IMinigame
     {
@@ -19,7 +19,7 @@ namespace GamifiedInputApp.Minigames
         private int tapCounter;
         private const int TOTAL_TAPS_TO_WIN = 5;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "DoubleTap", SupportedDeviceTypes.Spatial);
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
         {

@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace GamifiedInputApp.Minigames
+namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameHolding : IMinigame
+    class GestureRecognizerMinigameTap : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
@@ -25,7 +25,7 @@ namespace GamifiedInputApp.Minigames
         private int tapCounter;
         private bool tapLeft;
         
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Left/Right Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
