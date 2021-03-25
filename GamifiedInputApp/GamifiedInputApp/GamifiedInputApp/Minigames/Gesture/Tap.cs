@@ -16,7 +16,7 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigame : IMinigame
+    class Tap : IMinigame
     {
         // UI Components
         private ContainerVisual rootVisual; 
@@ -33,7 +33,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private const int TOTAL_TAPS_TO_WIN = 10; 
         private int tapCounter;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         { 
