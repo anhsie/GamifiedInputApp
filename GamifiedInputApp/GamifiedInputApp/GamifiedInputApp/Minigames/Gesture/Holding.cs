@@ -12,23 +12,34 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigame : IMinigame
+    class Holding : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
 
-        private SpriteVisual sprite;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 15; 
-        private int tapCounter;
+        private SpriteVisual sprite;
+        private ContainerVisual rootVisual;
+        private System.Diagnostics.Stopwatch stopwatch;
 
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizer", SupportedDeviceTypes.Spatial);
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Holding", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            return; 
+            this.Cleanup(); // Cleanup game board
+            return;
+        }
+
+        private void Cleanup()
+        {
+            pointerInputObserver = null;
+            gestureRecognizer = null;
+            rootVisual.Children.RemoveAll();
+            sprite = null;
+            stopwatch = null;
+
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -38,25 +49,34 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public MinigameState Update(in GameContext gameContext)
         {
+            Animate(gameContext);
             MinigameState result = MinigameState.Play;
 
-            if (gameContext.Timer.Finished && (tapCounter < TOTAL_TAPS_TO_WIN))
+            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 100)
             {
-                result = MinigameState.Fail;
+                result = MinigameState.Pass;
             }
             else if (gameContext.Timer.Finished)
             {
-                result = MinigameState.Pass; 
+                result = MinigameState.Fail;
             }
 
             return result; 
         }
 
+        private void Animate(in GameContext gameContext)
+        {
+            float dt = (float)gameContext.Timer.DeltaTime;
+            throw new NotImplementedException();
+        }
+
         public void Setup(ContainerVisual rootVisual)
         {
-            tapCounter = 0;
+            // Setup timer
+            stopwatch = new System.Diagnostics.Stopwatch();
 
             // Generate visual for tap game.
+            this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
             sprite = compositor.CreateSpriteVisual();
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
@@ -64,6 +84,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // Create InputSite
             var content = ExpCompositionContent.Create(compositor);
+            content.Root = sprite;
             var inputsite = ExpInputSite.GetOrCreateForContent(content);
 
             // PointerInputObserver
@@ -73,8 +94,8 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap;
-            gestureRecognizer.Tapped += Tapped;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Hold;
+            gestureRecognizer.Holding += Holding;
 
             rootVisual.Children.InsertAtTop(sprite);
         }
@@ -95,9 +116,22 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         // GestureRecognizer
-        private void Tapped(object sender, ExpTappedEventArgs eventArgs)
+        private void Holding(object sender, ExpHoldingEventArgs eventArgs)
         {
-            ++tapCounter;  
+            switch (eventArgs.HoldingState)
+            {
+                case Windows.UI.Input.HoldingState.Started:
+                    stopwatch.Start();
+                    return;
+                case Windows.UI.Input.HoldingState.Completed:
+                    stopwatch.Stop();
+                    return;
+                case Windows.UI.Input.HoldingState.Canceled:
+                    stopwatch.Stop();
+                    return;
+                default:
+                    return;
+            }
         }
     }
 }

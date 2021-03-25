@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
 using Microsoft.UI.Input.Experimental; 
@@ -12,21 +12,34 @@ using Windows.Foundation;
 
 namespace GamifiedInputApp.Minigames.Gesture
 {
-    class GestureRecognizerMinigameHolding : IMinigame
+    class Tap : IMinigame
     {
         // Input API
         private ExpPointerInputObserver pointerInputObserver; 
         private ExpGestureRecognizer gestureRecognizer;
+
         private SpriteVisual sprite;
+        private ContainerVisual rootVisual;
 
         // Minigame variables
-        private System.Diagnostics.Stopwatch stopwatch;
-
-        MinigameInfo IMinigame.Info => new MinigameInfo(this, "GestureRecognizerHolding", SupportedDeviceTypes.Spatial);
+        private const int TOTAL_TAPS_TO_WIN = 15; 
+        private int tapCounter;
+        private bool tapLeft;
+        
+        MinigameInfo IMinigame.Info => new MinigameInfo(this, "Left/Right Tap", SupportedDeviceTypes.Spatial);
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            this.Cleanup();
             return; 
+        }
+
+        private void Cleanup()
+        {
+            this.rootVisual.Children.RemoveAll();
+            sprite = null;
+            pointerInputObserver = null;
+            gestureRecognizer = null;
         }
 
         public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
@@ -38,13 +51,13 @@ namespace GamifiedInputApp.Minigames.Gesture
         {
             MinigameState result = MinigameState.Play;
 
-            if (Math.Abs(stopwatch.ElapsedMilliseconds - 1000) < 10)
+            if (tapCounter >= TOTAL_TAPS_TO_WIN)
             {
                 result = MinigameState.Pass;
             }
             else if (gameContext.Timer.Finished)
             {
-                result = MinigameState.Fail;
+                result = MinigameState.Fail; 
             }
 
             return result; 
@@ -52,10 +65,11 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public void Setup(ContainerVisual rootVisual)
         {
-            // Setup timer
-            stopwatch = new System.Diagnostics.Stopwatch();
+            tapCounter = 0;
+            tapLeft = true;
 
             // Generate visual for tap game.
+            this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
             sprite = compositor.CreateSpriteVisual();
             sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
@@ -73,8 +87,9 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Hold;
-            gestureRecognizer.Holding += Holding;
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
+            gestureRecognizer.Tapped += Tapped;
+            gestureRecognizer.RightTapped += RightTapped;
 
             rootVisual.Children.InsertAtTop(sprite);
         }
@@ -95,22 +110,36 @@ namespace GamifiedInputApp.Minigames.Gesture
         }
 
         // GestureRecognizer
-        private void Holding(object sender, ExpHoldingEventArgs eventArgs)
+        private void Tapped(object sender, ExpTappedEventArgs eventArgs)
         {
-            switch (eventArgs.HoldingState)
+            if (tapLeft)
             {
-                case Windows.UI.Input.HoldingState.Started:
-                    stopwatch.Start();
-                    return;
-                case Windows.UI.Input.HoldingState.Completed:
-                    stopwatch.Stop();
-                    return;
-                case Windows.UI.Input.HoldingState.Canceled:
-                    stopwatch.Stop();
-                    return;
-                default:
-                    return;
+                ProcessCorrectTap();
             }
+        }
+
+        
+
+        private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
+        {
+            if (!tapLeft)
+            {
+                ProcessCorrectTap();
+            }
+        }
+
+        private void ProcessCorrectTap()
+        {
+            ++tapCounter;
+            tapLeft = (uint)new Random().Next(0, 1) == 0;
+            if (tapLeft)
+            {
+
+            } else
+            {
+
+            }
+            throw new NotImplementedException();
         }
     }
 }

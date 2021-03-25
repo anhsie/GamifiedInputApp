@@ -39,6 +39,7 @@ namespace GamifiedInputApp
         Compositor compositor;
         ContentHelper content;
         private ObservableCollection<MinigameItem> DataSource;
+        private Dictionary<SupportedDeviceTypes, ObservableCollection<MinigameItem>> MinigamesByDevice;
 
         public MainWindow()
         {
@@ -55,7 +56,22 @@ namespace GamifiedInputApp
             const string baseNamespace = "GamifiedInputApp.Minigames";
             string[] basePath = baseNamespace.Split('.');
 
+            MouseInputPicker.DataContext = SupportedDeviceTypes.Mouse;
+            TouchInputPicker.DataContext = SupportedDeviceTypes.Touch;
+            PenInputPicker.DataContext = SupportedDeviceTypes.Pen;
+            KeyInputPicker.DataContext = SupportedDeviceTypes.Keyboard;
+
+            MinigamesByDevice = new Dictionary<SupportedDeviceTypes, ObservableCollection<MinigameItem>>();
+            foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
+            {
+                SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
+                MinigamesByDevice.Add(device, new ObservableCollection<MinigameItem>());
+            }
+
+            // Create a root "Select All" node
             DataSource = new ObservableCollection<MinigameItem>();
+            MinigameItem rootNode = new MinigameItem() { Content = "Select All" };
+            DataSource.Add(rootNode);
 
             // get minigame types (in the baseNamespace and implementing IMinigame)
             IEnumerable<Type> minigameTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type =>
@@ -70,24 +86,32 @@ namespace GamifiedInputApp
                 // get the content labels based on the namespace, skipping the baseNamespace
                 // e.g. "GamifiedInputApp.Minigames.Gesture.Holding" would be \Gesture\Holding in the treeview
                 IEnumerable<string> contentLabels = minigameType.Namespace.Split('.').Skip(basePath.Length);
-                ObservableCollection<MinigameItem> currentNode = DataSource;
+                MinigameItem currentNode = rootNode;
                 foreach (object contentLabel in contentLabels)
                 {
                     try
                     {
                         // find child with this label
-                        currentNode = currentNode.First(node => contentLabel.Equals(node.Content)).Children;
+                        currentNode = currentNode.Children.First(node => contentLabel.Equals(node.Content));
                     }
                     catch (InvalidOperationException)
                     {
                         // no child with this label, add one
-                        MinigameItem newItem = new MinigameItem() { Content = contentLabel };
-                        currentNode.Add(newItem); currentNode = newItem.Children;
+                        currentNode.Children.Add(currentNode = new MinigameItem() { Content = contentLabel });
                     }
                 }
-
                 // add minigame node
-                currentNode.Add(new MinigameItem() { Content = minigame.Info });
+                currentNode.Children.Add(currentNode = new MinigameItem() { Content = minigame.Info });
+
+                // record it by device type
+                foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
+                {
+                    SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
+                    if (minigame.Info.Devices.HasFlag(device))
+                    {
+                        MinigamesByDevice[device].Add(currentNode);
+                    }
+                }
             }
         }
 
@@ -124,6 +148,61 @@ namespace GamifiedInputApp
         {
             Results.Visibility = Visibility.Collapsed;
             Menu.Visibility = Visibility.Visible;
+        }
+        private void InputPicker_Checked(object sender, RoutedEventArgs e)
+        {
+            SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
+            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            {
+                MinigamePicker.SelectedItems.Add(minigame);
+            }
+            MinigamePicker_SelectionChanged(MinigamePicker, null);
+        }
+
+        private void InputPicker_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
+            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            {
+                MinigamePicker.SelectedItems.Remove(minigame);
+            }
+            MinigamePicker_SelectionChanged(MinigamePicker, null);
+        }
+
+        private void InputPicker_Indeterminate(object sender, RoutedEventArgs e)
+        {
+            SupportedDeviceTypes device = (SupportedDeviceTypes)(sender as CheckBox).DataContext;
+            // If all options are selected, clicking the box will change it to its indeterminate state.
+            // Instead, we want to uncheck all the boxes, so we do this programatically.
+            foreach (MinigameItem minigame in MinigamesByDevice[device])
+            {
+                if (!MinigamePicker.SelectedItems.Contains(minigame)) { return; }
+            }
+            // This will cause InputPicker_Unchecked to be executed, so
+            // we don't need to uncheck the other boxes here.
+            (sender as CheckBox).IsChecked = false;
+        }
+
+        private void MinigamePicker_SelectionChanged(TreeView sender, object args)
+        {
+            foreach (FrameworkElement child in InputDevicePickers.Children.Where(child => child is CheckBox))
+            {
+                SupportedDeviceTypes device = (SupportedDeviceTypes)child.DataContext;
+
+                CheckBox checkBox = child as CheckBox;
+                if (MinigamesByDevice[device].All(minigame => MinigamePicker.SelectedItems.Contains(minigame)))
+                {
+                    checkBox.IsChecked = true;
+                }
+                else if (MinigamesByDevice[device].Any(minigame => MinigamePicker.SelectedItems.Contains(minigame)))
+                {
+                    checkBox.IsChecked = null; // indeterminate
+                }
+                else
+                {
+                    checkBox.IsChecked = false;
+                }
+            }
         }
     }
 
