@@ -16,8 +16,10 @@ namespace GamifiedInputApp.Minigames.Handwriting
 
         ContentHelper m_contentHelper;
         Random m_random;
+        MinigameState m_state = MinigameState.Play;
 
         int m_letterIndex;
+        string m_letterAsString;
         SpriteVisual m_letterSprite;
         List<ICompositionSurface> m_letterImages;
 
@@ -38,7 +40,6 @@ namespace GamifiedInputApp.Minigames.Handwriting
             }
 
             m_random = new Random();
-            m_letterIndex = m_random.Next(m_letterImages.Count);
             m_inkAnalyzer = new InkAnalyzer();
             m_inkStrokebuilder = new InkStrokeBuilder();
         }
@@ -46,6 +47,9 @@ namespace GamifiedInputApp.Minigames.Handwriting
         public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
             m_contentHelper = contentHelper;
+
+            m_letterIndex = m_random.Next(m_letterImages.Count);
+            m_letterAsString = Convert.ToChar(Convert.ToInt32('A') + m_letterIndex).ToString();
 
             Compositor compositor = m_contentHelper.RootVisual.Compositor;
             m_letterSprite = compositor.CreateSpriteVisual();
@@ -62,8 +66,9 @@ namespace GamifiedInputApp.Minigames.Handwriting
             ellipseShape.Geometry = ellipse;
             ellipseShape.FillBrush = compositor.CreateColorBrush(Microsoft.UI.Colors.Black);
 
-            m_ellipseVisuals = new List<ShapeVisual>(100);
-            for (int i = 0; i < 100; i++)
+            const int totalDrawingShapes = 500;
+            m_ellipseVisuals = new List<ShapeVisual>(totalDrawingShapes);
+            for (int i = 0; i < totalDrawingShapes; i++)
             {
                 ShapeVisual ellipseVisual = compositor.CreateShapeVisual();
                 ellipseVisual.Shapes.Add(ellipseShape);
@@ -74,27 +79,30 @@ namespace GamifiedInputApp.Minigames.Handwriting
                 m_contentHelper.RootVisual.Children.InsertAtTop(ellipseVisual);
             }
 
+            m_inkAnalyzer.ClearDataForAllStrokes();
+            m_nextEllipse = 0;
+
             m_pointerInput = ExpPointerInputObserver.CreateForInputSite(m_contentHelper.InputSite);
             m_pointerInput.PointerPressed += M_pointerInput_PointerPressed;
             m_pointerInput.PointerMoved += M_pointerInput_PointerMoved;
             m_pointerInput.PointerReleased += M_pointerInput_PointerReleased;
-
-            var inkAnalyzer = new Windows.UI.Input.Inking.Analysis.InkAnalyzer();
-            var strokebuilder = new Windows.UI.Input.Inking.InkStrokeBuilder();
 
             UpdateLayout();
         }
 
         private void M_pointerInput_PointerPressed(ExpPointerInputObserver sender, ExpPointerEventArgs args)
         {
-            Clear();
+            if (args.CurrentPoint.Properties.IsEraser)
+            {
+                Clear();
+            }
         }
 
         void M_pointerInput_PointerMoved(ExpPointerInputObserver sender, ExpPointerEventArgs args)
         {
             var pointerPoint = args.CurrentPoint;
 
-            if (pointerPoint.IsInContact)
+            if (pointerPoint.IsInContact && !pointerPoint.Properties.IsEraser)
             {
                 var position = pointerPoint.Position;
                 DrawDot((int)position.X, (int)position.Y);
@@ -129,13 +137,15 @@ namespace GamifiedInputApp.Minigames.Handwriting
 
             if (points.Count > 0)
             {
-                m_inkAnalyzer.ClearDataForAllStrokes();
                 InkStroke stroke = m_inkStrokebuilder.CreateStroke(points);
                 m_inkAnalyzer.AddDataForStroke(stroke);
                 m_inkAnalyzer.SetStrokeDataKind(stroke.Id, InkAnalysisStrokeKind.Writing);
                 var operation = m_inkAnalyzer.AnalyzeAsync();
                 operation.Completed = (result, status) => 
                 {
+                    // Set our state to fail initially while we check to see if the ink analyzer
+                    // recognized the correct letter.
+
                     Debugger.Log(1, "Ink Analysis Result", string.Format("Status = {0}", status));
                     if (status == Windows.Foundation.AsyncStatus.Completed)
                     {
@@ -151,7 +161,11 @@ namespace GamifiedInputApp.Minigames.Handwriting
                             // Iterate through each InkWord node.
                             foreach (InkAnalysisInkWord node in inkwordNodes)
                             {
-                                Debugger.Log(1, "Ink Analysis Result", string.Format("Word Recognized = '{0}'", node.RecognizedText));
+                                Debugger.Log(1, "Ink Analysis Result", string.Format("Word Recognized = '{0}', Looking for = '{1}'", node.RecognizedText, m_letterAsString));
+                                if (string.Compare(node.RecognizedText, m_letterAsString, true) == 0)
+                                {
+                                    m_state = MinigameState.Pass;
+                                }
                             }
                         }
                     }
@@ -166,23 +180,31 @@ namespace GamifiedInputApp.Minigames.Handwriting
 
         void UpdateLayout()
         {
+            float contentWidth = m_contentHelper.Content.ActualSize.X;
+            float contentHeight = m_contentHelper.Content.ActualSize.Y;
+
+            // Set the letter image to fill the window but maintain its aspect ratio.
+            float lesserDimension = Math.Min(contentWidth, contentHeight);
+            m_letterSprite.Size = new Vector2(lesserDimension, lesserDimension);
+
+            // Center the letter image
             Vector3 offset = new Vector3();
-            offset.X = m_contentHelper.Content.ActualSize.X / 3f - m_letterSprite.Size.X / 2f;
-            offset.Y = m_contentHelper.Content.ActualSize.Y / 2f - m_letterSprite.Size.Y / 2f;
+            offset.X = contentWidth / 2f - lesserDimension / 2f;
+            offset.Y = contentHeight / 2f - lesserDimension / 2f;
             m_letterSprite.Offset = offset;
         }
 
         public MinigameState Update(in GameContext gameContext)
         {
-            /*DrawDot(
-                m_random.Next((int)m_contentHelper.Content.ActualSize.X),
-                m_random.Next((int)m_contentHelper.Content.ActualSize.Y));*/
-
-            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play;
+            return m_state;
         }
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            m_pointerInput.PointerPressed -= M_pointerInput_PointerPressed;
+            m_pointerInput.PointerMoved -= M_pointerInput_PointerMoved;
+            m_pointerInput.PointerReleased -= M_pointerInput_PointerReleased;
+            m_contentHelper.Content.StateChanged -= Content_StateChanged;
         }
 
         void DrawDot(int x, int y)
@@ -205,6 +227,8 @@ namespace GamifiedInputApp.Minigames.Handwriting
                 shape.IsVisible = false;
             }
             m_nextEllipse = 0;
+
+            m_inkAnalyzer.ClearDataForAllStrokes();
         }
     }
 }

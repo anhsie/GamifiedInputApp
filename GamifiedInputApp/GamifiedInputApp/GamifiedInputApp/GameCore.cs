@@ -129,9 +129,8 @@ namespace GamifiedInputApp
 
         private double GetInterval()
         {
-            //TimeSpan interval = MAX_TIME - (m_context.Cleared * TIME_STEP);
-            //return Math.Max(interval.TotalMilliseconds, MIN_TIME.TotalMilliseconds);
-            return 2000000000;
+            TimeSpan interval = MAX_TIME - (m_context.Cleared * TIME_STEP);
+            return Math.Max(interval.TotalMilliseconds, MIN_TIME.TotalMilliseconds);
         }
 
         protected void GameLoop(Object source, object e)
