@@ -17,6 +17,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         private ContainerVisual rootVisual;
         private SpriteVisual lightVisual;
+        private SpriteVisual objectVisual;
         private ExpInputSite inputSite;
         private Compositor compositor;
 
@@ -35,6 +36,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
             this.Setup(); // Setup game board
 
+            // Set focus on the new window so that keyboard input goes through properly
+            var focusController = ExpFocusController.GetForInputSite(inputSite);
+            focusController.TrySetFocus();
+
             var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
             keyboardInput.KeyUp += KeyUp;
             keyboardInput.KeyDown += KeyDown;
@@ -47,6 +52,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
             // Do update logic for minigame
             // If object is centered in light visual pass
+            if(IsLightInsideObject(objectVisual))
+            {
+                return MinigameState.Pass;
+            }
             
             return gameContext.Timer.Finished ? MinigameState.Fail : MinigameState.Play; // Return new state (auto pass here)
         }
@@ -67,10 +76,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
         {
             switch (args.VirtualKey)
             {
-                case Windows.System.VirtualKey.RightButton:
+                case Windows.System.VirtualKey.Right:
                     RightKeyPressed = false;
                     return;
-                case Windows.System.VirtualKey.LeftButton:
+                case Windows.System.VirtualKey.Left:
                     LeftKeyPressed = false;
                     return;
                 case Windows.System.VirtualKey.Up:
@@ -88,10 +97,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
         {
             switch (args.VirtualKey)
             {
-                case Windows.System.VirtualKey.RightButton:
+                case Windows.System.VirtualKey.Right:
                     RightKeyPressed = true;
                     return;
-                case Windows.System.VirtualKey.LeftButton:
+                case Windows.System.VirtualKey.Left:
                     LeftKeyPressed = true;
                     return;
                 case Windows.System.VirtualKey.Up:
@@ -106,11 +115,22 @@ namespace GamifiedInputApp.Minigames.Keyboard
         }
 
         private void Setup()
-        {           
+        {
             // Setup game board here
+            objectVisual = compositor.CreateSpriteVisual();
+            var penguinSurface = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Animals/penguin.png"));
+            var penguinBrush = compositor.CreateSurfaceBrush(penguinSurface);
+            objectVisual.Brush = penguinBrush;
+            objectVisual.Size = new Vector2(80, 80);
+
+            var random = new Random();
+            objectVisual.Offset = new Vector3(random.Next(100, 300), random.Next(100, 300), 0);
+            rootVisual.Children.InsertAtTop(objectVisual);
+
             lightVisual = compositor.CreateSpriteVisual();
+            lightVisual.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(150,255,255,0));
             lightVisual.Size = new Vector2(100, 100);
-            lightVisual.Offset = new Vector3(100,0,0);
+            lightVisual.Offset = new Vector3(0,0,0);
             rootVisual.Children.InsertAtTop(lightVisual);
         }
 
@@ -142,9 +162,26 @@ namespace GamifiedInputApp.Minigames.Keyboard
             lightVisual.Offset = offset;
         }
 
+        private bool IsLightInsideObject(SpriteVisual visual)
+        {
+            float xDiff = lightVisual.Size.X - visual.Size.X;
+            float yDiff = lightVisual.Size.Y - visual.Size.Y;
+            if (lightVisual.Offset.X < visual.Offset.X - xDiff || lightVisual.Offset.X > visual.Offset.X)
+            {
+                return false;
+            }
+            if (lightVisual.Offset.Y < visual.Offset.Y - yDiff || lightVisual.Offset.Y > visual.Offset.Y)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private void Cleanup()
         {
             lightVisual = null;
+            objectVisual = null;
             rootVisual.Children.RemoveAll();
         }
     }

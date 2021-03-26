@@ -122,7 +122,7 @@ namespace GamifiedInputApp.Minigames.Cursor
             var leftVisual = compositor.CreateSpriteVisual();
             leftVisual.Brush = compositor.CreateColorBrush(Colors.Red);
             leftVisual.Size = new Vector2(VISUAL_SIZE, VISUAL_SIZE);
-            leftVisual.Offset = new Vector3(100, 200, 0);
+            leftVisual.Offset = new Vector3(50, 200, 0);
             rootVisual.Children.InsertAtTop(leftVisual);
             cursorVisuals.Add(leftVisual);
             cursorTypesForVisuals.Add(CursorType.Cross);
@@ -130,7 +130,7 @@ namespace GamifiedInputApp.Minigames.Cursor
             var rightVisual = compositor.CreateSpriteVisual();
             rightVisual.Brush = compositor.CreateColorBrush(Colors.Red);
             rightVisual.Size = new Vector2(VISUAL_SIZE, VISUAL_SIZE);
-            rightVisual.Offset = new Vector3(300, 200, 0);
+            rightVisual.Offset = new Vector3(250, 200, 0);
             rootVisual.Children.InsertAtTop(rightVisual);
             cursorVisuals.Add(rightVisual);
             cursorTypesForVisuals.Add(CursorType.IBeam);

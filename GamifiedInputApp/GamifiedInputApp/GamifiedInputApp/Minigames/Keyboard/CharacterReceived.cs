@@ -13,7 +13,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 {
     class CharacterReceived : IMinigame
     {
-        private const float SPRITE_SPEED = 0.25f;
+        private const float SPRITE_SPEED = 0.15f;
 
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
@@ -48,7 +48,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
             // Do update logic for minigame
             
             // TODO: fail based on size of window
-            if(letterVisual != null && letterVisual.Offset.Y > 500)
+            if(letterVisual != null && letterVisual.Offset.Y > 400)
             {
                 return MinigameState.Fail;
             }
@@ -75,6 +75,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
                 var index = keyCode - 97;
                 if (index == ansIndex)
                 {
+                    rootVisual.Children.Remove(letterVisual);
                     letterVisual = null;
                 }
             }
@@ -86,18 +87,8 @@ namespace GamifiedInputApp.Minigames.Keyboard
         {
             SetupImages();
 
-            var random = new Random();
-            ansIndex = (uint) random.Next(0, 25);
-
             // Setup game board here
-            letterVisual = compositor.CreateSpriteVisual();
-            letterVisual.Size = new Vector2(100, 100);
-            // TODO: Random X based on size of window
-            letterVisual.Offset = new Vector3(random.Next(0,500),0,0);
-            var surfaceBrush = compositor.CreateSurfaceBrush();
-            surfaceBrush.Surface = letterImages[(int)ansIndex];
-            letterVisual.Brush = surfaceBrush;
-            rootVisual.Children.InsertAtTop(letterVisual);
+            CreateNewLetterVisual();
         }
 
         private void SetupImages()
@@ -131,6 +122,21 @@ namespace GamifiedInputApp.Minigames.Keyboard
             letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_Z.png")));
         }
 
+        private void CreateNewLetterVisual()
+        {
+            var random = new Random();
+            ansIndex = (uint)random.Next(0, 26);
+
+            letterVisual = compositor.CreateSpriteVisual();
+            letterVisual.Size = new Vector2(100, 100);
+            // TODO: Random X based on size of window
+            letterVisual.Offset = new Vector3(random.Next(0, 300), 0, 0);
+            var surfaceBrush = compositor.CreateSurfaceBrush();
+            surfaceBrush.Surface = letterImages[(int)ansIndex];
+            letterVisual.Brush = surfaceBrush;
+            rootVisual.Children.InsertAtTop(letterVisual);
+        }
+
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
@@ -141,6 +147,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
                 Vector3 offset = letterVisual.Offset;
                 offset.Y += (dt * SPRITE_SPEED);
                 letterVisual.Offset = offset;
+            }
+            else
+            {
+                CreateNewLetterVisual();
             }
         }
 
