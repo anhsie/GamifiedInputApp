@@ -72,7 +72,6 @@ namespace GamifiedInputApp
         private GameContext m_context;
         private ExpDesktopWindowBridge desktopBridge;
         private Visual m_rootVisual;
-        private ExpInputSite m_inputSite;
         private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
         private IMinigame m_currentMinigame;
@@ -130,8 +129,9 @@ namespace GamifiedInputApp
 
         private double GetInterval()
         {
-            TimeSpan interval = MAX_TIME - (m_context.Cleared * TIME_STEP);
-            return Math.Max(interval.TotalMilliseconds, MIN_TIME.TotalMilliseconds);
+            //TimeSpan interval = MAX_TIME - (m_context.Cleared * TIME_STEP);
+            //return Math.Max(interval.TotalMilliseconds, MIN_TIME.TotalMilliseconds);
+            return 2000000000;
         }
 
         protected void GameLoop(Object source, object e)
@@ -156,7 +156,7 @@ namespace GamifiedInputApp
                     // create new content object and place it into the desktop window bridge
                     ContentHelper contentHelper = new ContentHelper(compositor);
                     desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
-                    m_currentMinigame.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
+                    m_currentMinigame.Start(m_context, contentHelper);
 
                     // start timer
                     m_context.Timer.Start(GetInterval());

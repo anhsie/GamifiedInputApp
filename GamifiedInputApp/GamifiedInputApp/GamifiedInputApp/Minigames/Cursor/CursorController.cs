@@ -30,9 +30,9 @@ namespace GamifiedInputApp.Minigames.Cursor
         private int VISUAL_SIZE = 100;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CursorController", SupportedDeviceTypes.Spatial);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
-            this.Setup(rootVisual, inputSite); // Setup game board
+            this.Setup(contentHelper.RootVisual, contentHelper.InputSite); // Setup game board
 
             // Do start logic for minigame
         }

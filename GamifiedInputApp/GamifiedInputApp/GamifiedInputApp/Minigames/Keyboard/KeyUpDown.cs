@@ -26,11 +26,11 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Key Up/Down", SupportedDeviceTypes.Keyboard);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
-            this.rootVisual = rootVisual;
+            this.rootVisual = contentHelper.RootVisual;
             compositor = rootVisual.Compositor;
-            this.Setup(rootVisual, inputSite); // Setup game board
+            this.Setup(rootVisual, contentHelper.InputSite); // Setup game board
 
             // Do start logic for minigame
 

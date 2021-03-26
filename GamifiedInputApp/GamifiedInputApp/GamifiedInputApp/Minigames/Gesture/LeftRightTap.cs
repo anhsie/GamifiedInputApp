@@ -38,9 +38,9 @@ namespace GamifiedInputApp.Minigames.Gesture
             gestureRecognizer = null;
         }
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
-            this.Setup(rootVisual);
+            this.Setup(contentHelper.RootVisual);
         }
 
         public MinigameState Update(in GameContext gameContext)

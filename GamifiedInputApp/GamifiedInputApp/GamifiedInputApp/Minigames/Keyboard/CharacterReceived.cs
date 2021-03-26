@@ -25,15 +25,14 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CharacterReceived", SupportedDeviceTypes.Keyboard);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
-            this.rootVisual = rootVisual;
-            this.inputSite = inputSite;
+            this.rootVisual = contentHelper.RootVisual;
+            this.inputSite = contentHelper.InputSite;
             compositor = rootVisual.Compositor;
             this.Setup(rootVisual, inputSite); // Setup game board
 
             // Do start logic for minigame
-
         }
 
         private void SetupImages()

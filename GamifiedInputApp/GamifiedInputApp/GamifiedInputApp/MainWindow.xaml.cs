@@ -128,11 +128,12 @@ namespace GamifiedInputApp
                 }
 
                 // run selected minigames
+                Menu.Visibility = Visibility.Collapsed;
+                Minigame.Visibility = Visibility.Visible;
+
                 gameCore.Run(MinigamePicker.SelectedItems
                     .Where(item => (item as MinigameItem).IsMinigame)
                     .Select(item => (item as MinigameItem).Info));
-                Menu.Visibility = Visibility.Collapsed;
-                Minigame.Visibility = Visibility.Visible;
             }
             catch (InvalidOperationException ex)
             {

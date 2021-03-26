@@ -47,7 +47,7 @@ namespace GamifiedInputApp.Minigames
     {
         internal MinigameInfo Info { get; }
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite);
+        public void Start(in GameContext gameContext, ContentHelper contentHelper);
 
         public MinigameState Update(in GameContext gameContext);
 

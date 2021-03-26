@@ -43,9 +43,9 @@ namespace GamifiedInputApp.Minigames.Gesture
             return; 
         }
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext, ContentHelper contentHelper)
         {
-            this.rootVisual = rootVisual;
+            this.rootVisual = contentHelper.RootVisual;
             this.Setup(); 
         }
 
