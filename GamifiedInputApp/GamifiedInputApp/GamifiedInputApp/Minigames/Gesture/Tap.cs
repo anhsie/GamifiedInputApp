@@ -153,7 +153,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             if (currentAlienIndex != null)
             {
-                // Undo alien from previous location
+                // Undo alien from current location
                 SpriteVisual undoVisual = (SpriteVisual)this.rootVisual.Children.ElementAt((int)this.currentAlienIndex);
                 undoVisual.Brush = this.ship;
             }
@@ -168,7 +168,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void Cleanup()
         {
             this.pointerInputObserver.Dispose();
-            this.rootVisual.Dispose();
+            this.rootVisual.Children.RemoveAll();
             this.ship.Dispose();
             this.shipWithAlien.Dispose();
         }

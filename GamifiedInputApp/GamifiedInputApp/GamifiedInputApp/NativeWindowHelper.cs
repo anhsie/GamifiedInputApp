@@ -9,7 +9,6 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
-        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper(int width, int height)
