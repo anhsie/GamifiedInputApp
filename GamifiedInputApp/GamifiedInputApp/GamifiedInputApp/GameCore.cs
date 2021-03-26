@@ -80,7 +80,7 @@ namespace GamifiedInputApp
 
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
-            nativeWindow = new NativeWindowHelper();
+            nativeWindow = new NativeWindowHelper(400, 400);
             nativeWindow.Show();
 
             // setup code here
@@ -111,6 +111,7 @@ namespace GamifiedInputApp
                     IMinigame current = m_minigameQueue.Peek();
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge?.Dispose();
                     desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
                     PInvoke.User32.ShowWindow(
                         NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
@@ -122,7 +123,7 @@ namespace GamifiedInputApp
                     current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
-                    m_context.Timer.Interval = 5000;
+                    m_context.Timer.Interval = 50000;
                     m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;
