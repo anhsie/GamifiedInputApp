@@ -68,7 +68,7 @@
             </StackPanel>
         </StackPanel>
         <StackPanel x:Name="Minigame" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel x:Name="MinigamePanel" Width="400" Height="400" />
+            <Canvas x:Name="MinigamePanel" Width="400" Height="400" />
             <StackPanel Orientation="Vertical" Width="100" Height="400">
                 <ItemsControl ItemsSource="{x:Bind ScoreSource}"  ItemTemplate="{StaticResource ScoreTemplate}">
                     <ItemsControl.ItemsPanel>

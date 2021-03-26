@@ -33,8 +33,9 @@ namespace GamifiedInputApp
     public sealed partial class MainWindow : Window
     {
         GameCore gameCore;
-        ContainerVisual rootVisual;
-        private ObservableCollection<MinigameItem> DataSource;
+        Visual rootVisual;
+        private ObservableCollection<MinigameItem> TreeSource;
+        private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
 
         public MainWindow()
@@ -48,7 +49,7 @@ namespace GamifiedInputApp
 
             PopulateMinigames();
 
-            rootVisual = Compositor.CreateContainerVisual();
+            rootVisual = MinigamePanel.GetVisualInternal();
             rootVisual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
         }

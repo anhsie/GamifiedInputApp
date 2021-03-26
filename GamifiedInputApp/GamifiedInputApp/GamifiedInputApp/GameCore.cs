@@ -71,7 +71,7 @@ namespace GamifiedInputApp
 
         private GameContext m_context;
         private ExpDesktopWindowBridge desktopBridge;
-        private ContainerVisual m_rootVisual;
+        private Visual m_rootVisual;
         private ExpInputSite m_inputSite;
         private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
@@ -82,7 +82,7 @@ namespace GamifiedInputApp
         private MediaPlayer successMediaPlayer;
         private MediaPlayer failureMediaPlayer;
 
-        public GameCore(ContainerVisual rootVisual)
+        public GameCore(Visual rootVisual)
         {
             m_context.State = GameState.Start;
             m_context.Timer = new GameTimer();
