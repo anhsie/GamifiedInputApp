@@ -43,7 +43,7 @@ namespace GamifiedInputApp
         {
             TimeLeft = context.Timer.TimeRemaining.ToString(TimeFormat);
             GoToResults = context.State == GameState.Results;
-            Results = new()
+            Results = (context.State == GameState.Play) ? null : new()
             {
                 new ScoreItem() { Title = "Cleared", Value = context.Cleared.ToString() },
                 new ScoreItem() { Title = "Score", Value = context.Score.ToString() },
@@ -139,6 +139,10 @@ namespace GamifiedInputApp
             if (!IsRunning) { return; }
             nativeWindow.Show();
 
+            // send results containing updated time remaining,
+            // and also score if the state is no longer Play
+            Results?.Invoke(this, new ResultsEventArgs(m_context));
+
             switch (m_context.State)
             {
                 case GameState.Start:
@@ -204,7 +208,6 @@ namespace GamifiedInputApp
 
                     successMediaPlayer.Play();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
-
                 }
                 else //if (state == MinigameState.Fail)
                 {
@@ -212,8 +215,6 @@ namespace GamifiedInputApp
                     m_context.State = GameState.Results;
                 }
             }
-
-            Results?.Invoke(this, new ResultsEventArgs(m_context));
         }
     }
 }
