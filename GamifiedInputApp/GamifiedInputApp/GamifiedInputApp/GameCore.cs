@@ -62,12 +62,12 @@ namespace GamifiedInputApp
             compositor = rootVisual.Compositor;
 
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
-            m_loopTimer.Tick += GameLoop;
+            m_loopTimer.Tick += GameLoop;   
         }
 
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
-            nativeWindow = new NativeWindowHelper();
+            nativeWindow = new NativeWindowHelper(400, 400);
             nativeWindow.Show();
 
             // setup code here
@@ -98,6 +98,7 @@ namespace GamifiedInputApp
                     IMinigame current = m_minigameQueue.Peek();
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge?.Dispose();
                     desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
                     PInvoke.User32.ShowWindow(
                         NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
