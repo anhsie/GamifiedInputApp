@@ -7,6 +7,10 @@ using GamifiedInputApp.Minigames;
 using Microsoft.UI.Input.Experimental;
 using Microsoft.UI.Hosting.Experimental;
 using Microsoft.UI.Composition.Experimental;
+using System.Media;
+using System.IO;
+using Windows.Media.Playback;
+using Windows.Media.Core;
 
 namespace GamifiedInputApp
 {
@@ -50,6 +54,9 @@ namespace GamifiedInputApp
         private DispatcherTimer m_loopTimer;
         private NativeWindowHelper nativeWindow;
 
+        private MediaPlayer successMediaPlayer;
+        private MediaPlayer failureMediaPlayer;
+
         public GameCore(ContainerVisual rootVisual)
         {
             m_context.State = GameState.Start;
@@ -63,11 +70,17 @@ namespace GamifiedInputApp
 
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
             m_loopTimer.Tick += GameLoop;
+
+            successMediaPlayer = new MediaPlayer();
+            successMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/success.wav"));
+
+            failureMediaPlayer = new MediaPlayer();
+            failureMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/failure.wav"));
         }
 
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
-            nativeWindow = new NativeWindowHelper();
+            nativeWindow = new NativeWindowHelper(400, 400);
             nativeWindow.Show();
 
             // setup code here
@@ -81,6 +94,7 @@ namespace GamifiedInputApp
 
             // start game
             m_context.State = GameState.Start;
+            m_context.Score = 0;
             m_loopTimer.Start();
         }
 
@@ -97,6 +111,7 @@ namespace GamifiedInputApp
                     IMinigame current = m_minigameQueue.Peek();
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge?.Dispose();
                     desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
                     PInvoke.User32.ShowWindow(
                         NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
@@ -108,7 +123,7 @@ namespace GamifiedInputApp
                     current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
-                    m_context.Timer.Interval = 5000;
+                    m_context.Timer.Interval = 50000;
                     m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;
@@ -150,10 +165,12 @@ namespace GamifiedInputApp
                     m_minigameQueue.Dequeue();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
                     m_context.Score += 1;
+                    successMediaPlayer.Play();
                 }
                 else //if (state == MinigameState.Fail)
                 {
                     m_context.State = GameState.Results;
+                    failureMediaPlayer.Play();
                 }
             }
         }

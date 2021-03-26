@@ -9,10 +9,9 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
-        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
-        public NativeWindowHelper()
+        public NativeWindowHelper(int width, int height)
         {
             string className = "Minigame Window Class";
 
@@ -28,6 +27,10 @@ namespace GamifiedInputApp
                 PInvoke.User32.RegisterClassEx(ref windowClass);
             }
 
+            float scaleFactor = PInvoke.User32.GetDpiForSystem() / 96f;
+            int scaledWidth = (int)((float)width * scaleFactor);
+            int scaledHeight = (int)((float)height * scaleFactor);
+
             m_hwnd = PInvoke.User32.CreateWindowEx(
                     PInvoke.User32.WindowStylesEx.WS_EX_OVERLAPPEDWINDOW,
                     className,
@@ -35,8 +38,8 @@ namespace GamifiedInputApp
                     PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW,
                     0,
                     0,
-                    1280,
-                    720,
+                    scaledWidth,
+                    scaledHeight,
                     new IntPtr(),
                     new IntPtr(),
                     new IntPtr(),
@@ -45,7 +48,7 @@ namespace GamifiedInputApp
 
         public void Show()
         {
-            PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOWDEFAULT);
+            PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOW);
         }
 
         public void Destroy()

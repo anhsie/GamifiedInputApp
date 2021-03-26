@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
 using Microsoft.UI.Input.Experimental;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Numerics;
 
@@ -13,9 +14,11 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         private SpriteVisual sprite;
         private ContainerVisual rootVisual;
+        private CompositionSurfaceBrush leftArrowBrush;
+        private CompositionSurfaceBrush rightArrowBrush;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 15;
+        private const int TOTAL_TAPS_TO_WIN = 5;
         private int tapCounter;
         private bool tapLeft;
 
@@ -30,8 +33,8 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void Cleanup()
         {
             this.rootVisual.Children.RemoveAll();
-            sprite = null;
-            pointerInputObserver = null;
+            sprite.Dispose();
+            pointerInputObserver.Dispose();
             gestureRecognizer = null;
         }
 
@@ -64,17 +67,23 @@ namespace GamifiedInputApp.Minigames.Gesture
             // Generate visual for tap game.
             this.rootVisual = rootVisual;
             Compositor compositor = rootVisual.Compositor;
+            leftArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/leftArrow.png")));
+            rightArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/rightArrow.png")));
+            
             sprite = compositor.CreateSpriteVisual();
-            sprite.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x00, 0xB0, 0xF0));
+            sprite.Brush = leftArrowBrush;
             sprite.Size = new Vector2(100, 100);
+            sprite.Offset = new Vector3(100, 100, 0);
+            rootVisual.Children.InsertAtTop(sprite);
 
             // Create InputSite
-            var content = ExpCompositionContent.Create(compositor);
-            content.Root = sprite;
-            var inputsite = ExpInputSite.GetOrCreateForContent(content);
+            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                sprite,
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse |
+                Windows.UI.Core.CoreInputDeviceTypes.Touch |
+                Windows.UI.Core.CoreInputDeviceTypes.Pen);
 
             // PointerInputObserver
-            pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputsite);
             pointerInputObserver.PointerPressed += OnPointerPressed;
             pointerInputObserver.PointerReleased += OnPointerReleased;
 
@@ -84,7 +93,7 @@ namespace GamifiedInputApp.Minigames.Gesture
             gestureRecognizer.Tapped += Tapped;
             gestureRecognizer.RightTapped += RightTapped;
 
-            rootVisual.Children.InsertAtTop(sprite);
+            
         }
 
         //
@@ -124,16 +133,16 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void ProcessCorrectTap()
         {
             ++tapCounter;
-            tapLeft = (uint)new Random().Next(0, 1) == 0;
-            if (tapLeft)
+            var previousTapLeft = tapLeft;
+            tapLeft = (uint)new Random().Next(0, 2) == 0;
+            if (tapLeft && !previousTapLeft)
             {
-
+                sprite.Brush = leftArrowBrush;
             }
-            else
+            else if (!tapLeft && previousTapLeft)
             {
-
+                sprite.Brush = rightArrowBrush;
             }
-            throw new NotImplementedException();
         }
     }
 }

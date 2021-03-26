@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.0-prerelease" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0-prerelease" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
+    <PackageReference Include="System.Windows.Extensions" Version="5.0.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 </Project>

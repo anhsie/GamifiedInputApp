@@ -99,6 +99,7 @@ namespace GamifiedInputApp
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
         {
             ScoreText.Text = e.Score.ToString();
+            Menu.Visibility = Visibility.Collapsed;
             Results.Visibility = Visibility.Visible;
         }
 
@@ -116,7 +117,6 @@ namespace GamifiedInputApp
                 gameCore.Run(MinigamePicker.SelectedItems
                     .Where(item => (item as MinigameItem).IsMinigame)
                     .Select(item => (item as MinigameItem).Info));
-                Menu.Visibility = Visibility.Collapsed;
             }
             catch (InvalidOperationException ex)
             {

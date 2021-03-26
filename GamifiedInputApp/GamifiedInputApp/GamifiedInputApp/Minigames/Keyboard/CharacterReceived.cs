@@ -13,7 +13,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 {
     class CharacterReceived : IMinigame
     {
-        private const float SPRITE_SPEED = 0.5f;
+        private const float SPRITE_SPEED = 0.25f;
 
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
@@ -96,6 +96,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
             if(inputSite != null)
             {
+                // Set focus on the new window so that keyboard input goes through properly
+                var focusController = ExpFocusController.GetForInputSite(inputSite);
+                focusController.TrySetFocus();
+
                 var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
                 keyboardInput.CharacterReceived += CharacterReceivedEventHandler;
             }
@@ -143,9 +147,9 @@ namespace GamifiedInputApp.Minigames.Keyboard
         {
             var keyCode = args.KeyCode;
             // make sure key is from a-z
-            if(keyCode >= 0x41 && keyCode <= 0x5A)
+            if (keyCode >= 97 && keyCode <= 123)
             {
-                var index = keyCode - 0x41;
+                var index = keyCode - 97;
                 if(index == ansIndex)
                 {
                     letterVisual = null;
