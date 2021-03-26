@@ -109,7 +109,7 @@ namespace GamifiedInputApp
                     current.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
-                    m_context.Timer.Interval = 5000;
+                    m_context.Timer.Interval = 50000;
                     m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;

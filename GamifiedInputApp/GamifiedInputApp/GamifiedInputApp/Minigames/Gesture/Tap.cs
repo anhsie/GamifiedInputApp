@@ -29,7 +29,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private ExpGestureRecognizer gestureRecognizer;
 
         // Minigame variables
-        private const int TOTAL_TAPS_TO_WIN = 5; 
+        private const int TOTAL_TAPS_TO_WIN = 2; 
         private int tapCounter;
         MinigameState state;
 
@@ -52,6 +52,8 @@ namespace GamifiedInputApp.Minigames.Gesture
         public MinigameState Update(in GameContext gameContext)
         {
             // TODO: Every 3 or 5 seconds spawn an alien in new location
+
+            if (this.state != MinigameState.Play) { return state; }
 
             if (gameContext.Timer.Finished && (tapCounter < TOTAL_TAPS_TO_WIN))
             {
