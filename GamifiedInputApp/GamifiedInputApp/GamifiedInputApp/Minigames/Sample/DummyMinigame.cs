@@ -7,6 +7,7 @@ namespace GamifiedInputApp.Minigames.Sample
 {
     class DummyMinigame : IMinigame
     {
+        private ContainerVisual rootVisual;
         private SpriteVisual m_sprite;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.None);
 
@@ -39,6 +40,7 @@ namespace GamifiedInputApp.Minigames.Sample
 
         private void Setup(ContainerVisual rootVisual)
         {
+            this.rootVisual = rootVisual;
             // Setup game board here
             Compositor compositor = rootVisual.Compositor;
             m_sprite = compositor.CreateSpriteVisual();
@@ -61,6 +63,7 @@ namespace GamifiedInputApp.Minigames.Sample
         
         private void Cleanup()
         {
+            rootVisual.Children.RemoveAll();
             m_sprite = null;
         }
     }

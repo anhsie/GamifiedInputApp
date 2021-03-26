@@ -116,6 +116,11 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         private void Setup()
         {
+            RightKeyPressed = false;
+            LeftKeyPressed = false;
+            UpKeyPressed = false;
+            DownKeyPressed = false;
+
             // Setup game board here
             objectVisual = compositor.CreateSpriteVisual();
             var penguinSurface = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Animals/penguin.png"));
