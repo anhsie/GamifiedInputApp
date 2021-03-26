@@ -95,12 +95,13 @@ namespace GamifiedInputApp.Minigames.Gesture
             rootVisual.Children.InsertAtTop(sprite);
 
             // Create InputSite
-            var content = ExpCompositionContent.Create(compositor);
-            content.Root = sprite;
-            var inputsite = ExpInputSite.GetOrCreateForContent(content);
+            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                sprite,
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse |
+                Windows.UI.Core.CoreInputDeviceTypes.Touch |
+                Windows.UI.Core.CoreInputDeviceTypes.Pen);
 
             // PointerInputObserver
-            pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputsite);
             pointerInputObserver.PointerPressed += OnPointerPressed;
             pointerInputObserver.PointerReleased += OnPointerReleased;
 
