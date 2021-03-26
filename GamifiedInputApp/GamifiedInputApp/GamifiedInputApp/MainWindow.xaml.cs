@@ -37,12 +37,14 @@ namespace GamifiedInputApp
         private ObservableCollection<MinigameItem> TreeSource;
         private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
+        private Panel[] screens;
 
         public MainWindow()
         {
             this.InitializeComponent();
-            Minigame.Visibility = Visibility.Collapsed;
-            Results.Visibility = Visibility.Collapsed;
+
+            this.screens = new Panel[] { MenuScreen, MinigameScreen, ResultsScreen };
+            this.SetScreen(MenuScreen);
 
             TreeSource = new ObservableCollection<MinigameItem>();
             ScoreSource = new ObservableCollection<ScoreItem>();
@@ -102,6 +104,14 @@ namespace GamifiedInputApp
             }
         }
 
+        private void SetScreen(Panel target)
+        {
+            foreach (Panel screen in this.screens)
+            {
+                screen.Visibility = (screen == target) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
         {
             TimeRemaining.Text = e.TimeLeft;
@@ -112,8 +122,7 @@ namespace GamifiedInputApp
 
             if (e.GoToResults)
             {
-                Minigame.Visibility = Visibility.Collapsed;
-                Results.Visibility = Visibility.Visible;
+                SetScreen(ResultsScreen);
             }
         }
 
@@ -131,8 +140,7 @@ namespace GamifiedInputApp
                 gameCore.Run(MinigamePicker.SelectedItems
                     .Where(item => (item as MinigameItem).IsMinigame)
                     .Select(item => (item as MinigameItem).Info));
-                Menu.Visibility = Visibility.Collapsed;
-                Minigame.Visibility = Visibility.Visible;
+                SetScreen(MinigameScreen);
             }
             catch (InvalidOperationException ex)
             {
@@ -143,8 +151,7 @@ namespace GamifiedInputApp
 
         private void GoToMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            Results.Visibility = Visibility.Collapsed;
-            Menu.Visibility = Visibility.Visible;
+            SetScreen(MenuScreen);
         }
 
         private void InputPicker_Checked(object sender, RoutedEventArgs e)

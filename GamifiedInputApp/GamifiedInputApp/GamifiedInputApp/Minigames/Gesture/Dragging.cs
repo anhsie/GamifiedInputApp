@@ -19,15 +19,27 @@ namespace GamifiedInputApp.Minigames.Gesture
         private SpriteVisual ball;
         private SpriteVisual hoop;
         private ContainerVisual rootVisual;
-        private const float HOOP_Y_OFFSET = 300;
+        private const float HOOP_Y_OFFSET = 250;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dragging", SupportedDeviceTypes.Spatial);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext)
         {
-            this.Setup(rootVisual); // Setup game board
+            this.Setup(gameContext.Content.RootVisual); // Setup game board
 
-            // Do start logic for minigame
+            // PointerInputObserver
+            pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                hoop,
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse);
+
+            pointerInputObserver.PointerPressed += OnPointerPressed;
+            pointerInputObserver.PointerReleased += OnPointerReleased;
+            pointerInputObserver.PointerMoved += OnPointerMoved; 
+
+            // GestureRecognizer
+            gestureRecognizer = new ExpGestureRecognizer();
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
+            gestureRecognizer.Dragging += Drag;
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -49,66 +61,34 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            pointerInputObserver = null;
+            gestureRecognizer = null;
+
             this.Cleanup(); // Cleanup game board
-
-            // Do cleanup logic for minigame
         }
 
-
-        private void Setup(ContainerVisual rootVisual)
-        {
-            this.rootVisual = rootVisual;
-
-            var ballImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/ball.png"));
-            var hoopImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/hoop.png"));
-
-            Compositor comp = this.rootVisual.Compositor;
-
-            var ballBrush = comp.CreateSurfaceBrush();
-            ballBrush.Surface = ballImg;
-
-            var hoopBrush = comp.CreateSurfaceBrush();
-            hoopBrush.Surface = hoopImg;
-
-            this.ball = comp.CreateSpriteVisual();
-            this.ball.Brush = ballBrush;
-            this.ball.Size = new Vector2(50, 50);
-            this.ball.Offset = new Vector3(300, 0, 0); 
-
-
-            this.hoop = comp.CreateSpriteVisual();
-            this.hoop.Brush = hoopBrush;
-            this.hoop.Size = new Vector2(100, 100);
-            this.hoop.Offset = new Vector3(100, HOOP_Y_OFFSET, 0);
-
-
-            // PointerInputObserver
-            pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
-                hoop,
-                Windows.UI.Core.CoreInputDeviceTypes.Mouse);
-
-            pointerInputObserver.PointerPressed += OnPointerPressed;
-            pointerInputObserver.PointerReleased += OnPointerReleased;
-
-            // GestureRecognizer
-            gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
-            gestureRecognizer.Dragging += Drag;
-
-            rootVisual.Children.InsertAtTop(ball);
-            rootVisual.Children.InsertAtTop(hoop);
-
-        }
+        /******* Event functions *******/
 
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
-        {            
+        {
             gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)
         {
             gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+        }
+
+        private void OnPointerMoved(object sender, ExpPointerEventArgs args)
+        {
+            var pointerPoint = args.CurrentPoint;
+
+            if (pointerPoint.IsInContact)
+            {
+                var points = args.GetIntermediatePoints(); 
+                gestureRecognizer.ProcessMoveEvents(points);
+            } 
         }
 
         // GestureRecognizer
@@ -119,6 +99,8 @@ namespace GamifiedInputApp.Minigames.Gesture
             hoop.Offset = offset;
         }
 
+        /***** Animation functions *****/
+
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
@@ -128,13 +110,45 @@ namespace GamifiedInputApp.Minigames.Gesture
             offset.Y += (dt * SPRITE_SPEED);
             ball.Offset = offset;
         }
+
+        private void Setup(ContainerVisual rootVisual)
+        {
+            this.rootVisual = rootVisual;
+
+            var ballImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/ball.png"));
+            var hoopImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/hoop.png"));
+            
+            Compositor comp = this.rootVisual.Compositor;
+
+            var ballBrush = comp.CreateSurfaceBrush();
+            ballBrush.Surface = ballImg;
+
+            var hoopBrush = comp.CreateSurfaceBrush();
+            hoopBrush.Surface = hoopImg;
+
+
+            var rand = new Random().Next(0,250); 
+
+            this.ball = comp.CreateSpriteVisual();
+            this.ball.Brush = ballBrush;
+            this.ball.Size = new Vector2(30, 30);
+            this.ball.Offset = new Vector3(rand, 0, 0);
+
+
+            this.hoop = comp.CreateSpriteVisual();
+            this.hoop.Brush = hoopBrush;
+            this.hoop.Size = new Vector2(100, 100);
+            this.hoop.Offset = new Vector3(100, HOOP_Y_OFFSET, 0);
+
+            rootVisual.Children.InsertAtTop(ball);
+            rootVisual.Children.InsertAtTop(hoop);
+        }
+
         
         private void Cleanup()
         {
             this.ball.Dispose(); 
             this.hoop.Dispose();
-            pointerInputObserver = null;
-            gestureRecognizer = null;
             rootVisual.Children.RemoveAll();
         }
 

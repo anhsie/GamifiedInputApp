@@ -10,9 +10,9 @@ namespace GamifiedInputApp.Minigames.Sample
         private SpriteVisual m_sprite;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.None);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext)
         {
-            this.Setup(rootVisual); // Setup game board
+            this.Setup(gameContext.Content.RootVisual); // Setup game board
 
             // Do start logic for minigame
         }
@@ -33,9 +33,7 @@ namespace GamifiedInputApp.Minigames.Sample
             // Do cleanup logic for minigame
         }
 
-        /*******************************/
         /***** Animation functions *****/
-        /*******************************/
 
         private const float SPRITE_SPEED = 1.0f;
 
