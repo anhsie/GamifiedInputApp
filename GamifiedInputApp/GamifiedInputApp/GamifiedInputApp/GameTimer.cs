@@ -1,4 +1,5 @@
 ﻿using System;
+using Windows.Globalization.DateTimeFormatting;
 
 namespace GamifiedInputApp
 {
@@ -33,23 +34,23 @@ namespace GamifiedInputApp
         /// <summary>
         /// Get the time elapsed since the timer started
         /// </summary>
-        public double TimeElapsed => (CurrentTime - m_startTime).TotalMilliseconds;
+        public TimeSpan TimeElapsed => (CurrentTime - m_startTime);
 
         /// <summary>
         /// Get the time remaining until the Elapsed event is fired
         /// </summary>
-        public double TimeRemaining => (m_endTime - CurrentTime).TotalMilliseconds;
+        public TimeSpan TimeRemaining => (m_endTime - CurrentTime);
 
         /// <summary>
         /// Get the time since the last frame (for animation purposes)
         /// If StepFrames is false, returns 0
         /// </summary>
-        public double DeltaTime => StepFrames ? (m_currFrame - m_lastFrame).TotalMilliseconds : 0;
+        public TimeSpan DeltaTime => StepFrames ? (m_currFrame - m_lastFrame) : new TimeSpan(0);
 
         /// <summary>
         /// Returns true if the timer has finished (and AutoReset is off) or false otherwise
         /// </summary>
-        public bool Finished => !AutoReset && TimeRemaining <= 0;
+        public bool Finished => !AutoReset && TimeRemaining.TotalMilliseconds <= 0;
 
         /// <summary>
         /// Should be called once per game loop, prior to calling update() to process game logic
@@ -66,6 +67,13 @@ namespace GamifiedInputApp
             ResetTimer();
             base.Start();
         }
+
+        public void Start(double interval)
+        {
+            this.Interval = interval;
+            Start();
+        }
+
 
         private void ElapsedEvent(object sender, System.Timers.ElapsedEventArgs e)
         {

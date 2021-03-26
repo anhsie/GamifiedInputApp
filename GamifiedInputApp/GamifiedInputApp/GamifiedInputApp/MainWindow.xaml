@@ -7,8 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid x:Name="Root">
+    
+    <Grid x:Name="Root" Width="500" Height="400">
         <Grid.Resources>
             <DataTemplate x:Key="CategoryTemplate" x:DataType="local:MinigameItem">
                 <TreeViewItem ItemsSource="{x:Bind Children}">
@@ -34,12 +34,18 @@
             </DataTemplate>
             <local:MinigameTemplateSelector x:Key="MinigameTemplateSelector"
                 CategoryTemplate="{StaticResource CategoryTemplate}" MinigameTemplate="{StaticResource MinigameTemplate}" />
+            <DataTemplate x:Key="ScoreTemplate" x:DataType="local:ScoreItem">
+                <StackPanel Orientation="Vertical" Width="100" BorderThickness="2">
+                    <TextBlock Text="{x:Bind Title}" TextAlignment="Center" FontSize="20" Margin="10,10,10,10" />
+                    <TextBlock Text="{x:Bind Value}" TextAlignment="Center" FontWeight="Bold" FontSize="20" Margin="10,10,10,10" />
+                </StackPanel>
+            </DataTemplate>
         </Grid.Resources>
         <StackPanel x:Name="Menu" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TreeView x:Name="MinigamePicker" MinWidth="400" MaxHeight="400" Margin="10,10,10,10"
+                <TreeView x:Name="MinigamePicker" Width="400" Height="350" Margin="10,10,10,10"
                           HorizontalAlignment="Center" VerticalAlignment="Top" SelectionMode="Multiple"
-                          ItemsSource="{x:Bind DataSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}"
+                          ItemsSource="{x:Bind TreeSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}"
                           SelectionChanged="MinigamePicker_SelectionChanged">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">
@@ -48,22 +54,44 @@
                         </Style>
                     </TreeView.ItemContainerStyle>
                 </TreeView>
-                <Button x:Name="StartButton" Click="startButton_Click">Start</Button>
+                <Button x:Name="StartButton" Width="100" Click="startButton_Click">Start</Button>
             </StackPanel>
             <StackPanel x:Name="InputDevicePickers" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <CheckBox x:Name="MouseInputPicker" Content="Mouse" IsThreeState="True" Width="100"
+                <CheckBox x:Name="MouseInputPicker" Content="Mouse" IsThreeState="True" Width="125"
                     Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="TouchInputPicker" Content="Touch" IsThreeState="True" Width="100"
+                <CheckBox x:Name="TouchInputPicker" Content="Touch" IsThreeState="True" Width="125"
                     Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="PenInputPicker" Content="Pen" IsThreeState="True" Width="100"
+                <CheckBox x:Name="PenInputPicker" Content="Pen" IsThreeState="True" Width="125"
                     Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="KeyInputPicker" Content="Keyboard" IsThreeState="True" Width="100"
+                <CheckBox x:Name="KeyInputPicker" Content="Keyboard" IsThreeState="True" Width="125"
                     Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
             </StackPanel>
         </StackPanel>
-        <StackPanel x:Name="Results" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock x:Name="ScoreText" FontWeight="Bold" FontSize="20" Margin="10,10,10,10"/>
-            <Button x:Name="GoToMenuButton" Click="GoToMenuButton_Click">Main Menu</Button>
+        <StackPanel x:Name="Minigame" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel x:Name="MinigamePanel" Width="400" Height="400" />
+            <StackPanel Orientation="Vertical" Width="100" Height="400">
+                <ItemsControl ItemsSource="{x:Bind ScoreSource}"  ItemTemplate="{StaticResource ScoreTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Width="100" Height="300" BorderThickness="2"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" Width="100" Height="100" BorderThickness="4">
+                    <TextBlock Text="Fail In" TextAlignment="Center" FontSize="20" Margin="10,10,10,10" />
+                    <TextBlock x:Name="TimeRemaining" Text="" TextAlignment="Center" FontWeight="Bold" FontSize="20" Margin="10,10,10,10" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel x:Name="Results" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ItemsControl ItemsSource="{x:Bind ScoreSource}" ItemTemplate="{StaticResource ScoreTemplate}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="400" Height="100" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <Button x:Name="GoToMenuButton" Click="GoToMenuButton_Click" HorizontalAlignment="Center">Main Menu</Button>
         </StackPanel>
     </Grid>
     

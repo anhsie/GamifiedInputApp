@@ -37,16 +37,23 @@ namespace GamifiedInputApp
         NativeWindowHelper nativeWindow;
         ExpDesktopWindowBridge desktopBridge;
         ContentHelper content;
-        private ObservableCollection<MinigameItem> DataSource;
+        private ObservableCollection<ScoreItem> ScoreSource;
+        private ObservableCollection<MinigameItem> TreeSource;
         private IList<object> MinigameItems;
 
         public MainWindow()
         {
             this.InitializeComponent();
+            Minigame.Visibility = Visibility.Collapsed;
             Results.Visibility = Visibility.Collapsed;
+
+            TreeSource = new ObservableCollection<MinigameItem>();
+            ScoreSource = new ObservableCollection<ScoreItem>();
+
             PopulateMinigames();
 
             rootVisual = Compositor.CreateContainerVisual();
+            rootVisual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
             ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
         }
 
@@ -61,9 +68,8 @@ namespace GamifiedInputApp
             KeyInputPicker.DataContext = SupportedDeviceTypes.Keyboard;
 
             // Create a root "Select All" node
-            DataSource = new ObservableCollection<MinigameItem>();
             MinigameItem rootNode = new MinigameItem() { Content = "Select All" };
-            DataSource.Add(rootNode);
+            TreeSource.Add(rootNode);
 
             // get minigame types (in the baseNamespace and implementing IMinigame)
             IEnumerable<Type> minigameTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type =>
@@ -101,8 +107,17 @@ namespace GamifiedInputApp
 
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
         {
-            ScoreText.Text = e.Score.ToString();
-            Results.Visibility = Visibility.Visible;
+            TimeRemaining.Text = e.TimeLeft;
+            if (ScoreSource.Count() == 0)
+            {
+                foreach (ScoreItem item in e.Results) { ScoreSource.Add(item); }
+            }
+
+            if (e.GoToResults)
+            {
+                Minigame.Visibility = Visibility.Collapsed;
+                Results.Visibility = Visibility.Visible;
+            }
         }
 
         private void startButton_Click(object sender, RoutedEventArgs e)
@@ -120,6 +135,7 @@ namespace GamifiedInputApp
                     .Where(item => (item as MinigameItem).IsMinigame)
                     .Select(item => (item as MinigameItem).Info));
                 Menu.Visibility = Visibility.Collapsed;
+                Minigame.Visibility = Visibility.Visible;
             }
             catch (InvalidOperationException ex)
             {
@@ -183,6 +199,12 @@ namespace GamifiedInputApp
                 child.IsChecked = (selected == 0) ? false : (unselected == 0) ? true : null;  // null for indeterminate
             }
         }
+    }
+
+    public class ScoreItem
+    {
+        public string Title { get; set; }
+        public string Value { get; set; }
     }
 
     public class MinigameItem

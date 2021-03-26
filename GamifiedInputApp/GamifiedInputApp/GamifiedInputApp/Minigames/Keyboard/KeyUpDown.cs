@@ -76,7 +76,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
             //Check for borders
             Vector3 offset = lightVisual.Offset;
             if(RightKeyPressed && !LeftKeyPressed)

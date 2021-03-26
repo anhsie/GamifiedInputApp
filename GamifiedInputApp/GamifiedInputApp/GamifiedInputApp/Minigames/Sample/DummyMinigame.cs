@@ -52,7 +52,7 @@ namespace GamifiedInputApp.Minigames.Sample
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
 
             Vector3 offset = m_sprite.Offset;
             offset.X += (dt * SPRITE_SPEED);

@@ -97,7 +97,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
 
             Vector3 offset = m_ball.Offset;
             offset.Y += (dt * SPRITE_SPEED);

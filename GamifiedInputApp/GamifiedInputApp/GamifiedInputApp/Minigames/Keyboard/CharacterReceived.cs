@@ -117,7 +117,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
         private void Animate(in GameContext gameContext)
         {
             // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
 
             if(letterVisual != null)
             {

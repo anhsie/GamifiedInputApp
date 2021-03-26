@@ -12,7 +12,7 @@ namespace GamifiedInputApp
         PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
-        public NativeWindowHelper()
+        public NativeWindowHelper(int width, int height)
         {
             string className = "Minigame Window Class";
 
@@ -35,8 +35,8 @@ namespace GamifiedInputApp
                     PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW,
                     0,
                     0,
-                    400,
-                    400,
+                    width,
+                    height,
                     new IntPtr(),
                     new IntPtr(),
                     new IntPtr(),

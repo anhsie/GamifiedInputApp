@@ -66,7 +66,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         private void Animate(in GameContext gameContext)
         {
-            float dt = (float)gameContext.Timer.DeltaTime;
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
             throw new NotImplementedException();
         }
 
