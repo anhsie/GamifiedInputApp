@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace GamifiedInputApp
     public class NativeWindowHelper
     {
         IntPtr m_hwnd;
+        GCHandle m_pinnedWindowsProcedureDelegate;
 
         public NativeWindowHelper(int width, int height)
         {
@@ -19,7 +21,9 @@ namespace GamifiedInputApp
             {
                 PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
                 windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
-                windowClass.lpfnWndProc = WindowProcedure;
+                PInvoke.User32.WndProc windowProcedureDelegate = WindowProcedure;
+                windowClass.lpfnWndProc = windowProcedureDelegate;
+                m_pinnedWindowsProcedureDelegate = GCHandle.Alloc(windowProcedureDelegate);
                 fixed (char* c = className)
                 {
                     windowClass.lpszClassName = c;
@@ -54,6 +58,7 @@ namespace GamifiedInputApp
         public void Destroy()
         {
             PInvoke.User32.DestroyWindow(m_hwnd);
+            m_pinnedWindowsProcedureDelegate.Free();
         }
 
         public Microsoft.UI.WindowId WindowId
