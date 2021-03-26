@@ -81,12 +81,18 @@ namespace GamifiedInputApp.Minigames.Gesture
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            }
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            }
         }
 
         // GestureRecognizer
@@ -121,8 +127,8 @@ namespace GamifiedInputApp.Minigames.Gesture
             this.shipWithAlien.Surface = shipWithAlienImg;
 
             int size = 100;
-            int x = 100;
-            int y = 100;
+            int x = 50;
+            int y = 50;
 
             for (int i = 1; i < 10; i++)
             {
@@ -134,10 +140,10 @@ namespace GamifiedInputApp.Minigames.Gesture
 
                 if ((i % 3) == 0)
                 {
-                    x += 100;
-                    y = 100;
+                    y += 100;
+                    x = 50;
                 }
-                else { y += 100; }
+                else { x += 100; }
             }
         }
 

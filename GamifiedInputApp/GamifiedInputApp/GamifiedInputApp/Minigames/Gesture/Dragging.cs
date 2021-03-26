@@ -19,7 +19,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private SpriteVisual ball;
         private SpriteVisual hoop;
         private ContainerVisual rootVisual;
-        private const float HOOP_Y_OFFSET = 300;
+        private const float HOOP_Y_OFFSET = 250;
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dragging", SupportedDeviceTypes.Spatial);
 
@@ -34,6 +34,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             pointerInputObserver.PointerPressed += OnPointerPressed;
             pointerInputObserver.PointerReleased += OnPointerReleased;
+            pointerInputObserver.PointerMoved += OnPointerMoved; 
 
             // GestureRecognizer
             gestureRecognizer = new ExpGestureRecognizer();
@@ -71,19 +72,39 @@ namespace GamifiedInputApp.Minigames.Gesture
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            }
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            }
+        }
+
+        private void OnPointerMoved(object sender, ExpPointerEventArgs args)
+        {
+            var pointerPoint = args.CurrentPoint;
+
+            if (pointerPoint.IsInContact)
+            {
+                var points = args.GetIntermediatePoints();
+                if (gestureRecognizer != null)
+                {
+                    gestureRecognizer.ProcessMoveEvents(points);
+                }
+            } 
         }
 
         // GestureRecognizer
         private void Drag(object sender, ExpDraggingEventArgs eventArgs)
         {
             Vector3 offset = hoop.Offset;
-            offset.X = Convert.ToSingle(eventArgs.Position.X);
+            offset.X = (float)eventArgs.Position.X;
             hoop.Offset = offset;
         }
 
@@ -105,7 +126,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             var ballImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/ball.png"));
             var hoopImg = LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Basketball/hoop.png"));
-
+            
             Compositor comp = this.rootVisual.Compositor;
 
             var ballBrush = comp.CreateSurfaceBrush();
@@ -114,10 +135,13 @@ namespace GamifiedInputApp.Minigames.Gesture
             var hoopBrush = comp.CreateSurfaceBrush();
             hoopBrush.Surface = hoopImg;
 
+
+            var rand = new Random().Next(0,250); 
+
             this.ball = comp.CreateSpriteVisual();
             this.ball.Brush = ballBrush;
-            this.ball.Size = new Vector2(50, 50);
-            this.ball.Offset = new Vector3(300, 0, 0); 
+            this.ball.Size = new Vector2(30, 30);
+            this.ball.Offset = new Vector3(rand, 0, 0);
 
 
             this.hoop = comp.CreateSpriteVisual();

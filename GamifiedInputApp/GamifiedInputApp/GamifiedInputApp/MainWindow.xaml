@@ -41,6 +41,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{x:Bind Info}" HorizontalAlignment="Stretch" Grid.Column="0"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">

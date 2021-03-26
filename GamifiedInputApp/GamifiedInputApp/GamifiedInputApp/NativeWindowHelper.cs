@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace GamifiedInputApp
         IntPtr m_hwnd;
         Rect m_rect;
         IntPtr? m_parent;
+        GCHandle m_pinnedWindowsProcedureDelegate;
 
         private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
@@ -30,7 +32,9 @@ namespace GamifiedInputApp
             {
                 PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
                 windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
-                windowClass.lpfnWndProc = WindowProcedure;
+                PInvoke.User32.WndProc windowProcedureDelegate = WindowProcedure;
+                windowClass.lpfnWndProc = windowProcedureDelegate;
+                m_pinnedWindowsProcedureDelegate = GCHandle.Alloc(windowProcedureDelegate);
                 windowClass.hbrBackground = PInvoke.Gdi32.GetStockObject(PInvoke.Gdi32.StockObject.GRAY_BRUSH);
                 fixed (char* c = className)
                 {
@@ -72,6 +76,7 @@ namespace GamifiedInputApp
         public void Destroy()
         {
             PInvoke.User32.DestroyWindow(m_hwnd);
+            m_pinnedWindowsProcedureDelegate.Free();
         }
 
         public Microsoft.UI.WindowId WindowId

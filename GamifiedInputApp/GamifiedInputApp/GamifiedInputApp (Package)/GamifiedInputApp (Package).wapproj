@@ -52,6 +52,7 @@
     <Content Include="Audio\success.wav" />
     <Content Include="Images\Alien\shipGreen.png" />
     <Content Include="Images\Alien\shipGreen_manned.png" />
+    <Content Include="Images\Animals\penguin.png" />
     <Content Include="Images\Arrows\leftArrow.png" />
     <Content Include="Images\Arrows\rightArrow.png" />
     <Content Include="Images\Basketball\ball.png" />
