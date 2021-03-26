@@ -13,7 +13,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 {
     class CharacterReceived : IMinigame
     {
-        private const float SPRITE_SPEED = 0.5f;
+        private const float SPRITE_SPEED = 0.25f;
 
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
