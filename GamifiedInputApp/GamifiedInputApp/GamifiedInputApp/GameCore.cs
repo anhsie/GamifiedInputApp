@@ -27,6 +27,8 @@ namespace GamifiedInputApp
         public GameState State; // current game state
         public GameTimer Timer; // minigame timer
 
+        public ContentHelper Content; // game content
+
         public int Cleared; // minigames cleared
         public int Score; // total score
         public TimeSpan? Fastest; // fastest clear
@@ -154,9 +156,9 @@ namespace GamifiedInputApp
                         PInvoke.User32.WindowShowStyle.SW_SHOW);
                     desktopBridge.FillTopLevelWindow = true;
                     // create new content object and place it into the desktop window bridge
-                    ContentHelper contentHelper = new ContentHelper(compositor);
-                    desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
-                    m_currentMinigame.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
+                    m_context.Content = new ContentHelper(compositor);
+                    desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
+                    m_currentMinigame.Start(m_context);
 
                     // start timer
                     m_context.Timer.Start(GetInterval());

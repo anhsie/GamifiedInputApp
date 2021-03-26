@@ -30,11 +30,18 @@ namespace GamifiedInputApp.Minigames.Cursor
         private int VISUAL_SIZE = 100;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CursorController", SupportedDeviceTypes.Spatial);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext)
         {
-            this.Setup(rootVisual, inputSite); // Setup game board
-
+            this.Setup(gameContext.Content.RootVisual); // Setup game board
+            
             // Do start logic for minigame
+            if (gameContext.Content.InputSite != null)
+            {
+                this.inputSite = gameContext.Content.InputSite;
+                cursorController = ExpPointerCursorController.GetForInputSite(inputSite);
+                pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputSite);
+                pointerInputObserver.PointerReleased += PointerInputObserver_PointerReleased;
+            }
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -73,18 +80,38 @@ namespace GamifiedInputApp.Minigames.Cursor
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            this.Cleanup(); // Cleanup game board
+            pointerInputObserver.PointerReleased -= PointerInputObserver_PointerReleased;
 
-            // Do cleanup logic for minigame
+            this.Cleanup(); // Cleanup game board
         }
 
-        /*******************************/
+        /******* Event functions *******/
+
+        private void PointerInputObserver_PointerReleased(ExpPointerInputObserver sender, ExpPointerEventArgs args)
+        {
+            for (int i = 0; i < cursorVisuals.Count; i++)
+            {
+                if (InsideVisual(cursorVisuals[i], args.CurrentPoint.Position))
+                {
+                    if (cursorTypesForVisuals[i] == ansCursorType)
+                    {
+                        currentState = MinigameState.Pass;
+                    }
+                    else
+                    {
+                        currentState = MinigameState.Fail;
+                    }
+                    break;
+                }
+            }
+        }
+
+
         /***** Animation functions *****/
-        /*******************************/
 
         private const float SPRITE_SPEED = 1.0f;
 
-        private void Setup(ContainerVisual rootVisual, ExpInputSite inputSite)
+        private void Setup(ContainerVisual rootVisual)
         {
             currentState = MinigameState.Play;
             this.rootVisual = rootVisual;
@@ -128,33 +155,6 @@ namespace GamifiedInputApp.Minigames.Cursor
             ansVisual.Size = new Vector2(VISUAL_SIZE, VISUAL_SIZE);
             ansVisual.Offset = new Vector3(150, 0, 0);
             rootVisual.Children.InsertAtTop(ansVisual);
-
-            if(inputSite != null)
-            {
-                this.inputSite = inputSite;
-                cursorController = ExpPointerCursorController.GetForInputSite(inputSite);
-                pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputSite);
-                pointerInputObserver.PointerReleased += PointerInputObserver_PointerReleased;
-            }
-        }
-
-        private void PointerInputObserver_PointerReleased(ExpPointerInputObserver sender, ExpPointerEventArgs args)
-        {
-            for (int i = 0; i < cursorVisuals.Count; i++)
-            {
-                if (InsideVisual(cursorVisuals[i], args.CurrentPoint.Position))
-                {
-                    if (cursorTypesForVisuals[i] == ansCursorType)
-                    {
-                        currentState = MinigameState.Pass;
-                    }
-                    else
-                    {
-                        currentState = MinigameState.Fail;
-                    }
-                    break;
-                }
-            }
         }
 
         private bool InsideVisual(SpriteVisual visual, Windows.Foundation.Point point)
@@ -182,7 +182,6 @@ namespace GamifiedInputApp.Minigames.Cursor
         private void Cleanup()
         {
             rootVisual.Children.RemoveAll();
-            pointerInputObserver.PointerReleased -= PointerInputObserver_PointerReleased;
         }
     }
 }

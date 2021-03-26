@@ -23,11 +23,22 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dragging", SupportedDeviceTypes.Spatial);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
+        public void Start(in GameContext gameContext)
         {
-            this.Setup(rootVisual); // Setup game board
+            this.Setup(gameContext.Content.RootVisual); // Setup game board
 
-            // Do start logic for minigame
+            // PointerInputObserver
+            pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                hoop,
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse);
+
+            pointerInputObserver.PointerPressed += OnPointerPressed;
+            pointerInputObserver.PointerReleased += OnPointerReleased;
+
+            // GestureRecognizer
+            gestureRecognizer = new ExpGestureRecognizer();
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
+            gestureRecognizer.Dragging += Drag;
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -49,11 +60,44 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            this.Cleanup(); // Cleanup game board
+            pointerInputObserver = null;
+            gestureRecognizer = null;
 
-            // Do cleanup logic for minigame
+            this.Cleanup(); // Cleanup game board
         }
 
+        /******* Event functions *******/
+
+        // PointerInputObserver
+        private void OnPointerPressed(object sender, ExpPointerEventArgs args)
+        {
+            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+        }
+
+        private void OnPointerReleased(object sender, ExpPointerEventArgs args)
+        {
+            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+        }
+
+        // GestureRecognizer
+        private void Drag(object sender, ExpDraggingEventArgs eventArgs)
+        {
+            Vector3 offset = hoop.Offset;
+            offset.X = Convert.ToSingle(eventArgs.Position.X);
+            hoop.Offset = offset;
+        }
+
+        /***** Animation functions *****/
+
+        private void Animate(in GameContext gameContext)
+        {
+            // Animate things here
+            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
+
+            Vector3 offset = ball.Offset;
+            offset.Y += (dt * SPRITE_SPEED);
+            ball.Offset = offset;
+        }
 
         private void Setup(ContainerVisual rootVisual)
         {
@@ -81,60 +125,15 @@ namespace GamifiedInputApp.Minigames.Gesture
             this.hoop.Size = new Vector2(100, 100);
             this.hoop.Offset = new Vector3(100, HOOP_Y_OFFSET, 0);
 
-
-            // PointerInputObserver
-            pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
-                hoop,
-                Windows.UI.Core.CoreInputDeviceTypes.Mouse);
-
-            pointerInputObserver.PointerPressed += OnPointerPressed;
-            pointerInputObserver.PointerReleased += OnPointerReleased;
-
-            // GestureRecognizer
-            gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Drag;
-            gestureRecognizer.Dragging += Drag;
-
             rootVisual.Children.InsertAtTop(ball);
             rootVisual.Children.InsertAtTop(hoop);
-
         }
 
-        // PointerInputObserver
-        private void OnPointerPressed(object sender, ExpPointerEventArgs args)
-        {            
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
-        }
-
-        private void OnPointerReleased(object sender, ExpPointerEventArgs args)
-        {
-            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
-        }
-
-        // GestureRecognizer
-        private void Drag(object sender, ExpDraggingEventArgs eventArgs)
-        {
-            Vector3 offset = hoop.Offset;
-            offset.X = Convert.ToSingle(eventArgs.Position.X);
-            hoop.Offset = offset;
-        }
-
-        private void Animate(in GameContext gameContext)
-        {
-            // Animate things here
-            float dt = (float)gameContext.Timer.DeltaTime.TotalMilliseconds;
-
-            Vector3 offset = ball.Offset;
-            offset.Y += (dt * SPRITE_SPEED);
-            ball.Offset = offset;
-        }
         
         private void Cleanup()
         {
             this.ball.Dispose(); 
             this.hoop.Dispose();
-            pointerInputObserver = null;
-            gestureRecognizer = null;
             rootVisual.Children.RemoveAll();
         }
 

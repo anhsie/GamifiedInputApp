@@ -24,23 +24,26 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Left/Right Tap", SupportedDeviceTypes.Spatial);
 
-        public void End(in GameContext gameContext, in MinigameState finalState)
+        public void Start(in GameContext gameContext)
         {
-            this.Cleanup();
-            return;
-        }
+            this.Setup(gameContext.Content.RootVisual);
 
-        private void Cleanup()
-        {
-            this.rootVisual.Children.RemoveAll();
-            sprite.Dispose();
-            pointerInputObserver.Dispose();
-            gestureRecognizer = null;
-        }
+            // Create InputSite
+            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
+                sprite,
+                Windows.UI.Core.CoreInputDeviceTypes.Mouse |
+                Windows.UI.Core.CoreInputDeviceTypes.Touch |
+                Windows.UI.Core.CoreInputDeviceTypes.Pen);
 
-        public void Start(in GameContext gameContext, ContainerVisual rootVisual, ExpInputSite inputSite)
-        {
-            this.Setup(rootVisual);
+            // PointerInputObserver
+            pointerInputObserver.PointerPressed += OnPointerPressed;
+            pointerInputObserver.PointerReleased += OnPointerReleased;
+
+            // GestureRecognizer
+            gestureRecognizer = new ExpGestureRecognizer();
+            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
+            gestureRecognizer.Tapped += Tapped;
+            gestureRecognizer.RightTapped += RightTapped;
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -59,46 +62,15 @@ namespace GamifiedInputApp.Minigames.Gesture
             return result;
         }
 
-        public void Setup(ContainerVisual rootVisual)
+        public void End(in GameContext gameContext, in MinigameState finalState)
         {
-            tapCounter = 0;
-            tapLeft = true;
+            pointerInputObserver.Dispose();
+            gestureRecognizer = null;
 
-            // Generate visual for tap game.
-            this.rootVisual = rootVisual;
-            Compositor compositor = rootVisual.Compositor;
-            leftArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/leftArrow.png")));
-            rightArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/rightArrow.png")));
-            
-            sprite = compositor.CreateSpriteVisual();
-            sprite.Brush = leftArrowBrush;
-            sprite.Size = new Vector2(100, 100);
-            sprite.Offset = new Vector3(100, 100, 0);
-            rootVisual.Children.InsertAtTop(sprite);
-
-            // Create InputSite
-            this.pointerInputObserver = ExpIndependentPointerInputObserver.CreateForVisual(
-                sprite,
-                Windows.UI.Core.CoreInputDeviceTypes.Mouse |
-                Windows.UI.Core.CoreInputDeviceTypes.Touch |
-                Windows.UI.Core.CoreInputDeviceTypes.Pen);
-
-            // PointerInputObserver
-            pointerInputObserver.PointerPressed += OnPointerPressed;
-            pointerInputObserver.PointerReleased += OnPointerReleased;
-
-            // GestureRecognizer
-            gestureRecognizer = new ExpGestureRecognizer();
-            gestureRecognizer.GestureSettings = Windows.UI.Input.GestureSettings.Tap | Windows.UI.Input.GestureSettings.RightTap;
-            gestureRecognizer.Tapped += Tapped;
-            gestureRecognizer.RightTapped += RightTapped;
-
-            
+            this.Cleanup(); // Cleanup game board
         }
 
-        //
-        // Event Handlers 
-        //
+        /******* Event functions *******/
 
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
@@ -119,8 +91,6 @@ namespace GamifiedInputApp.Minigames.Gesture
                 ProcessCorrectTap();
             }
         }
-
-
 
         private void RightTapped(object sender, ExpRightTappedEventArgs eventArgs)
         {
@@ -143,6 +113,32 @@ namespace GamifiedInputApp.Minigames.Gesture
             {
                 sprite.Brush = rightArrowBrush;
             }
+        }
+
+        /***** Animation functions *****/
+
+        public void Setup(ContainerVisual rootVisual)
+        {
+            tapCounter = 0;
+            tapLeft = true;
+
+            // Generate visual for tap game.
+            this.rootVisual = rootVisual;
+            Compositor compositor = rootVisual.Compositor;
+            leftArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/leftArrow.png")));
+            rightArrowBrush = compositor.CreateSurfaceBrush(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/Arrows/rightArrow.png")));
+
+            sprite = compositor.CreateSpriteVisual();
+            sprite.Brush = leftArrowBrush;
+            sprite.Size = new Vector2(100, 100);
+            sprite.Offset = new Vector3(100, 100, 0);
+            rootVisual.Children.InsertAtTop(sprite);
+        }
+
+        private void Cleanup()
+        {
+            this.rootVisual.Children.RemoveAll();
+            sprite.Dispose();
         }
     }
 }
