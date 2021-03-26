@@ -72,12 +72,18 @@ namespace GamifiedInputApp.Minigames.Gesture
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
+            }
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            if (gestureRecognizer != null)
+            {
+                gestureRecognizer.ProcessUpEvent(args.CurrentPoint);
+            }
         }
 
         private void OnPointerMoved(object sender, ExpPointerEventArgs args)
@@ -86,8 +92,11 @@ namespace GamifiedInputApp.Minigames.Gesture
 
             if (pointerPoint.IsInContact)
             {
-                var points = args.GetIntermediatePoints(); 
-                gestureRecognizer.ProcessMoveEvents(points);
+                var points = args.GetIntermediatePoints();
+                if (gestureRecognizer != null)
+                {
+                    gestureRecognizer.ProcessMoveEvents(points);
+                }
             } 
         }
 
@@ -95,7 +104,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         private void Drag(object sender, ExpDraggingEventArgs eventArgs)
         {
             Vector3 offset = hoop.Offset;
-            offset.X = Convert.ToSingle(eventArgs.Position.X);
+            offset.X = (float)eventArgs.Position.X;
             hoop.Offset = offset;
         }
 
