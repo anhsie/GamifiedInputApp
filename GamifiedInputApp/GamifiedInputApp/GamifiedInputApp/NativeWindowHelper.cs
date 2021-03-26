@@ -11,7 +11,7 @@ namespace GamifiedInputApp
     public class NativeWindowHelper
     {
         IntPtr m_hwnd;
-        Rect m_rect;
+        DipAwareRect m_rect;
         IntPtr? m_parent;
         GCHandle m_pinnedWindowsProcedureDelegate;
 
@@ -25,7 +25,7 @@ namespace GamifiedInputApp
         public NativeWindowHelper(Windows.Foundation.Rect bounds, IntPtr? hWndParent)
         {
             string className = "Minigame Window Class";
-            m_rect = new Rect(bounds);
+            m_rect = new DipAwareRect(bounds);
             m_parent = hWndParent;
 
             unsafe
@@ -79,6 +79,14 @@ namespace GamifiedInputApp
             m_pinnedWindowsProcedureDelegate.Free();
         }
 
+        public Windows.Foundation.Rect GetWindowRect()
+        {
+            PInvoke.RECT rect;
+            PInvoke.User32.GetWindowRect(m_hwnd, out rect);
+
+            return new Windows.Foundation.Rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+        }
+
         public Microsoft.UI.WindowId WindowId
         { 
             get { return GetWindowIdFromHwnd(m_hwnd); } 
@@ -102,9 +110,9 @@ namespace GamifiedInputApp
             return PInvoke.User32.DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
         }
 
-        public struct Rect
+        public struct DipAwareRect
         {
-            public Rect(Windows.Foundation.Rect bounds)
+            public DipAwareRect(Windows.Foundation.Rect bounds)
             {
                 x = (int)(bounds.X * ScaleFactor);
                 y = (int)(bounds.Y * ScaleFactor);

@@ -13,8 +13,9 @@ namespace GamifiedInputApp.Minigames.Keyboard
 {
     class KeyUpDown : IMinigame
     {
-        private const float SPRITE_SPEED = 0.5f;
+        private const float SPRITE_SPEED = 0.25f;
 
+        private NativeWindowHelper window;
         private ContainerVisual rootVisual;
         private SpriteVisual lightVisual;
         private SpriteVisual objectVisual;
@@ -30,6 +31,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         public void Start(in GameContext gameContext)
         {
+            window = gameContext.Window;
             rootVisual = gameContext.Content.RootVisual;
             inputSite = gameContext.Content.InputSite;
             compositor = rootVisual.Compositor;
@@ -128,8 +130,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
             objectVisual.Brush = penguinBrush;
             objectVisual.Size = new Vector2(80, 80);
 
+            // Generate object within the game window bounds
+            var windowRect = window.GetWindowRect();
             var random = new Random();
-            objectVisual.Offset = new Vector3(random.Next(100, 300), random.Next(100, 300), 0);
+            objectVisual.Offset = new Vector3(random.Next(100, (int)windowRect.Width - 100), random.Next(100, (int)windowRect.Height - 100), 0);
             rootVisual.Children.InsertAtTop(objectVisual);
 
             lightVisual = compositor.CreateSpriteVisual();

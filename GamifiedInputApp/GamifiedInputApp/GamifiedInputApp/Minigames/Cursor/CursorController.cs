@@ -23,6 +23,7 @@ namespace GamifiedInputApp.Minigames.Cursor
         private CursorType ansCursorType;
         private MinigameState currentState;
 
+        private NativeWindowHelper window;
         private ExpInputSite inputSite;
         private ExpPointerCursorController cursorController;
         private ExpPointerInputObserver pointerInputObserver;
@@ -32,6 +33,7 @@ namespace GamifiedInputApp.Minigames.Cursor
 
         public void Start(in GameContext gameContext)
         {
+            window = gameContext.Window;
             this.Setup(gameContext.Content.RootVisual); // Setup game board
             
             // Do start logic for minigame
@@ -49,11 +51,14 @@ namespace GamifiedInputApp.Minigames.Cursor
             // Do update logic for minigame
             if (cursorController != null)
             {
-                var cursorPosition = cursorController.Position;
+                // Cursor position is returned in screen coordinates, so transform to window coordinates
+                var cursorPositionAbsolute = cursorController.Position;
+                var windowRect = window.GetWindowRect();
+                var cursorPositionRelative = new Windows.Foundation.Point(cursorPositionAbsolute.X - windowRect.X, cursorPositionAbsolute.Y - windowRect.Y);
                 CoreCursor cursor = new CoreCursor(CoreCursorType.Arrow, 99);
                 for (int i = 0; i < cursorVisuals.Count; i++)
                 {
-                    if (InsideVisual(cursorVisuals[i], cursorPosition))
+                    if (InsideVisual(cursorVisuals[i], cursorPositionRelative))
                     {
                         switch (cursorTypesForVisuals[i])
                         {

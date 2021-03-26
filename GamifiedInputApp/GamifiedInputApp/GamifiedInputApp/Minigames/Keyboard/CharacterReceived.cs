@@ -15,6 +15,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
     {
         private const float SPRITE_SPEED = 0.15f;
 
+        private NativeWindowHelper window;
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
         private ExpInputSite inputSite;
@@ -27,6 +28,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         public void Start(in GameContext gameContext)
         {
+            window = gameContext.Window;
             rootVisual = gameContext.Content.RootVisual;
             inputSite = gameContext.Content.InputSite;
             compositor = rootVisual.Compositor;
@@ -46,9 +48,8 @@ namespace GamifiedInputApp.Minigames.Keyboard
             this.Animate(gameContext); // Animate game board
 
             // Do update logic for minigame
-            
-            // TODO: fail based on size of window
-            if(letterVisual != null && letterVisual.Offset.Y > 400)
+            var windowRect = window.GetWindowRect();
+            if (letterVisual != null && letterVisual.Offset.Y > windowRect.Height)
             {
                 return MinigameState.Fail;
             }
@@ -85,7 +86,10 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         private void Setup()
         {
-            SetupImages();
+            if (letterImages == null)
+            {
+                SetupImages();
+            }
 
             // Setup game board here
             CreateNewLetterVisual();
@@ -129,8 +133,11 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
             letterVisual = compositor.CreateSpriteVisual();
             letterVisual.Size = new Vector2(100, 100);
-            // TODO: Random X based on size of window
-            letterVisual.Offset = new Vector3(random.Next(0, 300), 0, 0);
+
+            // Make sure letter is within the window
+            var windowRect = window.GetWindowRect();
+            letterVisual.Offset = new Vector3(random.Next(0, (int)windowRect.Width - 100), 0, 0);
+
             var surfaceBrush = compositor.CreateSurfaceBrush();
             surfaceBrush.Surface = letterImages[(int)ansIndex];
             letterVisual.Brush = surfaceBrush;

@@ -29,6 +29,7 @@ namespace GamifiedInputApp
         public GameTimer Timer; // minigame timer
 
         public ContentHelper Content; // game content
+        public NativeWindowHelper Window; // window game is running in
 
         public int Cleared; // minigames cleared
         public int Score; // total score
@@ -75,7 +76,6 @@ namespace GamifiedInputApp
         private GameContext m_context;
         private ExpDesktopWindowBridge desktopBridge;
         private MainWindow m_mainWindow;
-        private ExpInputSite m_inputSite;
         private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
         private IMinigame m_currentMinigame;
@@ -127,6 +127,7 @@ namespace GamifiedInputApp
             m_context.Cleared = 0;
             m_context.Score = 0;
             m_context.Fastest = null;
+            m_context.Window = nativeWindow;
 
             // start game
             m_context.State = GameState.Start;
