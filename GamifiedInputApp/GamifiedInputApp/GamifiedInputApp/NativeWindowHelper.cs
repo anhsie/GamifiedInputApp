@@ -73,6 +73,18 @@ namespace GamifiedInputApp
                 PInvoke.User32.SetWindowPosFlags.SWP_SHOWWINDOW);
         }
 
+        public void Hide()
+        {
+            PInvoke.User32.SetWindowPos(
+                m_hwnd,
+                HWND_TOP,
+                m_rect.x,
+                m_rect.y,
+                m_rect.cx,
+                m_rect.cy,
+                PInvoke.User32.SetWindowPosFlags.SWP_HIDEWINDOW);
+        }
+
         public void Destroy()
         {
             PInvoke.User32.DestroyWindow(m_hwnd);
@@ -82,6 +94,16 @@ namespace GamifiedInputApp
         public Microsoft.UI.WindowId WindowId
         { 
             get { return GetWindowIdFromHwnd(m_hwnd); } 
+        }
+
+        public int Width
+        {
+            get { return m_rect.cx; }
+        }
+
+        public int Height
+        {
+            get { return m_rect.cy; }
         }
 
         public static IntPtr GetHwndFromWindowId(Microsoft.UI.WindowId windowId)
