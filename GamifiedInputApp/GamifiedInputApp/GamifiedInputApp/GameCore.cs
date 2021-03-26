@@ -69,16 +69,16 @@ namespace GamifiedInputApp
         public event ResultsEventHandler Results;
 
         private GameContext m_context;
-        private ExpDesktopWindowBridge desktopBridge;
+        private ExpDesktopWindowBridge m_desktopBridge;
         private MainWindow m_mainWindow;
-        private Compositor compositor;
+        private Compositor m_compositor;
         private Queue<IMinigame> m_minigameQueue;
         private IMinigame m_currentMinigame;
         private DispatcherQueueTimer m_loopTimer;
-        private NativeWindowHelper nativeWindow;
+        private NativeWindowHelper m_nativeWindow;
 
-        private MediaPlayer successMediaPlayer;
-        private MediaPlayer failureMediaPlayer;
+        private MediaPlayer m_successMediaPlayer;
+        private MediaPlayer m_failureMediaPlayer;
 
         public bool IsRunning { get; private set; }
 
@@ -89,25 +89,30 @@ namespace GamifiedInputApp
             m_context.Timer.StepFrames = true;
 
             m_mainWindow = mainWindow;
-            compositor = m_mainWindow.RootVisual.Compositor;
+            m_compositor = m_mainWindow.RootVisual.Compositor;
 
             m_loopTimer = m_mainWindow.DispatcherQueue.CreateTimer();
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
             m_loopTimer.IsRepeating = true;
             m_loopTimer.Tick += GameLoop;
 
-            successMediaPlayer = new MediaPlayer();
-            successMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/success.wav"));
+            m_successMediaPlayer = new MediaPlayer();
+            m_successMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/success.wav"));
 
-            failureMediaPlayer = new MediaPlayer();
-            failureMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/failure.wav"));
+            m_failureMediaPlayer = new MediaPlayer();
+            m_failureMediaPlayer.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Audio/failure.wav"));
         }
 
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
             if (IsRunning) { return; }
-            nativeWindow = new NativeWindowHelper(m_mainWindow.GameBounds, m_mainWindow.Handle);
-            nativeWindow.Show();
+
+            if (m_nativeWindow == null)
+            {
+                m_nativeWindow = new NativeWindowHelper(m_mainWindow.GameBounds, m_mainWindow.Handle);
+            }
+
+            m_nativeWindow.Show();
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -122,7 +127,7 @@ namespace GamifiedInputApp
             m_context.Cleared = 0;
             m_context.Score = 0;
             m_context.Fastest = null;
-            m_context.Window = nativeWindow;
+            m_context.Window = m_nativeWindow;
 
             // start game
             m_context.State = GameState.Start;
@@ -139,7 +144,7 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!IsRunning) { return; }
-            nativeWindow.Show();
+            m_nativeWindow.Show();
 
             // send results containing updated time remaining,
             // and also score if the state is no longer Play
@@ -154,15 +159,25 @@ namespace GamifiedInputApp
                     m_currentMinigame = m_minigameQueue.Dequeue();
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
-                    desktopBridge?.Dispose();
-                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+                    m_desktopBridge = ExpDesktopWindowBridge.Create(m_compositor, m_nativeWindow.WindowId);
+                    PInvoke.User32.SetWindowPos(
+                        NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        m_nativeWindow.Width,
+                        m_nativeWindow.Height,
+                        PInvoke.User32.SetWindowPosFlags.SWP_NOACTIVATE |
+                            PInvoke.User32.SetWindowPosFlags.SWP_NOOWNERZORDER |
+                            PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER
+                        );
                     PInvoke.User32.ShowWindow(
-                        NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
+                        NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
                         PInvoke.User32.WindowShowStyle.SW_SHOW);
-                    desktopBridge.FillTopLevelWindow = true;
+                    
                     // create new content object and place it into the desktop window bridge
-                    m_context.Content = new ContentHelper(compositor);
-                    desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
+                    m_context.Content = new ContentHelper(m_compositor);
+                    m_desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
                     m_currentMinigame.Start(m_context);
 
                     // start timer
@@ -178,7 +193,9 @@ namespace GamifiedInputApp
                     // stop timer
                     m_loopTimer.Stop();
                     IsRunning = false;
-                    nativeWindow.Destroy();
+                    m_nativeWindow.Hide();
+                    m_desktopBridge?.Dispose();
+                    m_desktopBridge = null;
                     break;
             }
         }
@@ -208,12 +225,12 @@ namespace GamifiedInputApp
                     // note: Fastest is nullable, so it may not have a value. Use MAX_TIME to compare in that case
                     if (elapsed < m_context.Fastest.GetValueOrDefault(MAX_TIME)) { m_context.Fastest = elapsed; }
 
-                    successMediaPlayer.Play();
+                    m_successMediaPlayer.Play();
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
                 }
                 else //if (state == MinigameState.Fail)
                 {
-                    failureMediaPlayer.Play();
+                    m_failureMediaPlayer.Play();
                     m_context.State = GameState.Results;
                 }
             }
