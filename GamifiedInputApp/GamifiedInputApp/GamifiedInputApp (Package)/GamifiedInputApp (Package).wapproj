@@ -48,8 +48,14 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Audio\failure.wav" />
+    <Content Include="Audio\success.wav" />
     <Content Include="Images\Alien\shipGreen.png" />
     <Content Include="Images\Alien\shipGreen_manned.png" />
+    <Content Include="Images\Arrows\leftArrow.png" />
+    <Content Include="Images\Arrows\rightArrow.png" />
+    <Content Include="Images\Basketball\ball.png" />
+    <Content Include="Images\Basketball\hoop.png" />
     <Content Include="Images\CursorTypes\cross.png" />
     <Content Include="Images\CursorTypes\ibeam.png" />
     <Content Include="Images\DeviceTypes\key.png" />

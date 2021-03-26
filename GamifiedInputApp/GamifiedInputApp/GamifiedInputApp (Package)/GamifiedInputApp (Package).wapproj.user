@@ -5,4 +5,7 @@
     <RemoteDebugEnabled>False</RemoteDebugEnabled>
     <RemoteDebugMachine>jnordi-surfacepro5</RemoteDebugMachine>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+  </PropertyGroup>
 </Project>
