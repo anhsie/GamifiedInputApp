@@ -14,28 +14,27 @@ namespace GamifiedInputApp
         Compositor m_compositor;
         ExpCompositionContent m_content;
         ExpInputSite m_inputSite;
-        ExpPointerInputObserver m_pointerInputObserver;
-        
         SpriteVisual m_backgroundVisual;
-        CompositionColorBrush m_redBrush;
-        CompositionColorBrush m_blueBrush;
-        bool m_red = true;
 
         public ContentHelper(Compositor compositor)
         {
             m_compositor = compositor;
             m_content = ExpCompositionContent.Create(compositor);
+            m_content.AppData = this;
 
             m_backgroundVisual = m_compositor.CreateSpriteVisual();
-            m_redBrush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.Red);
-            m_blueBrush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.Blue);
-            m_backgroundVisual.Brush = m_redBrush;
+            m_backgroundVisual.Brush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.White);
             m_backgroundVisual.Size = new System.Numerics.Vector2(400, 400);
             m_content.Root = m_backgroundVisual;
 
             m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
-            m_pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(m_inputSite);
-            m_pointerInputObserver.PointerPressed += M_pointerInputObvserver_PointerPressed;
+
+            m_content.StateChanged += M_content_StateChanged;
+        }
+
+        private void M_content_StateChanged(ExpCompositionContent sender, ExpCompositionContentEventArgs args)
+        {
+            m_backgroundVisual.Size = m_content.ActualSize;
         }
 
         public ExpCompositionContent Content
@@ -48,20 +47,9 @@ namespace GamifiedInputApp
             get { return m_inputSite; }
         }
 
-        private void M_pointerInputObvserver_PointerPressed(
-            ExpPointerInputObserver sender, 
-            ExpPointerEventArgs args)
+        public SpriteVisual RootVisual
         {
-            m_red = !m_red;
-
-            if (m_red)
-            {
-                m_backgroundVisual.Brush = m_redBrush;
-            }
-            else
-            {
-                m_backgroundVisual.Brush = m_blueBrush;
-            }
+            get { return m_backgroundVisual; }
         }
     }
 }

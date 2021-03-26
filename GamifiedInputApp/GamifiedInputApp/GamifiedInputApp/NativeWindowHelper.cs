@@ -9,7 +9,6 @@ namespace GamifiedInputApp
 {
     public class NativeWindowHelper
     {
-        PInvoke.User32.WNDCLASSEX windowClass;
         IntPtr m_hwnd;
 
         public NativeWindowHelper(int width, int height)
@@ -55,12 +54,19 @@ namespace GamifiedInputApp
 
         public Microsoft.UI.WindowId WindowId
         { 
-            get 
-            {
-                Microsoft.UI.WindowId windowId;
-                windowId.Value = (ulong)m_hwnd.ToInt64();
-                return windowId; 
-            } 
+            get { return GetWindowIdFromHwnd(m_hwnd); } 
+        }
+
+        public static IntPtr GetHwndFromWindowId(Microsoft.UI.WindowId windowId)
+        {
+            return new IntPtr((long)windowId.Value);
+        }
+
+        public static Microsoft.UI.WindowId GetWindowIdFromHwnd(IntPtr hwnd)
+        {
+            Microsoft.UI.WindowId windowId;
+            windowId.Value = (ulong)hwnd.ToInt64();
+            return windowId;
         }
 
         static unsafe IntPtr WindowProcedure(IntPtr hWnd, PInvoke.User32.WindowMessage msg, void* wParam, void* lParam)

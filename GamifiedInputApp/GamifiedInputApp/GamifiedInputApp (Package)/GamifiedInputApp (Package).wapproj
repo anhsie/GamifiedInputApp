@@ -48,6 +48,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\Alien\shipGreen.png" />
+    <Content Include="Images\Alien\shipGreen_manned.png" />
+    <Content Include="Images\CursorTypes\cross.png" />
+    <Content Include="Images\CursorTypes\ibeam.png" />
     <Content Include="Images\DeviceTypes\key.png" />
     <Content Include="Images\DeviceTypes\mouse.png" />
     <Content Include="Images\DeviceTypes\pen.png" />

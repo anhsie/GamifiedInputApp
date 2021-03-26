@@ -34,11 +34,7 @@ namespace GamifiedInputApp
     {
         GameCore gameCore;
         ContainerVisual rootVisual;
-        NativeWindowHelper nativeWindow;
-        ExpDesktopWindowBridge desktopBridge;
-        ContentHelper content;
-        private ObservableCollection<ScoreItem> ScoreSource;
-        private ObservableCollection<MinigameItem> TreeSource;
+        private ObservableCollection<MinigameItem> DataSource;
         private IList<object> MinigameItems;
 
         public MainWindow()

@@ -107,7 +107,7 @@ namespace GamifiedInputApp.Minigames.Gesture
         // PointerInputObserver
         private void OnPointerPressed(object sender, ExpPointerEventArgs args)
         {
-            gestureRecognizer.ProcessDownEvent(args.CurrentPoint); 
+            gestureRecognizer.ProcessDownEvent(args.CurrentPoint);
         }
 
         private void OnPointerReleased(object sender, ExpPointerEventArgs args)

@@ -94,7 +94,6 @@ namespace GamifiedInputApp
         {
             nativeWindow = new NativeWindowHelper(400, 400);
             nativeWindow.Show();
-            desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -112,6 +111,7 @@ namespace GamifiedInputApp
 
             // start game
             m_context.State = GameState.Start;
+            m_context.Score = 0;
             m_loopTimer.Start();
         }
 
@@ -124,7 +124,7 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
-
+            nativeWindow.Show();
             switch (m_context.State)
             {
                 case GameState.Start:
@@ -133,16 +133,16 @@ namespace GamifiedInputApp
                     // setup minigame
                     m_currentMinigame = m_minigameQueue.Dequeue();
 
-                    var content = ExpCompositionContent.Create(compositor);
-                    var minigameRoot = compositor.CreateContainerVisual();
-                    var spriteVisual = compositor.CreateSpriteVisual();
-                    minigameRoot.Children.InsertAtTop(spriteVisual);
-                    spriteVisual.Size = new System.Numerics.Vector2(100, 100);
-                    spriteVisual.Brush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(1, 0, 1, 1));
-                    content.Root = spriteVisual;
-                    var minigameInputSite = ExpInputSite.GetOrCreateForContent(content);
-                    desktopBridge.Connect(content, minigameInputSite);
-                    m_currentMinigame.Start(m_context, minigameRoot, minigameInputSite);
+                    // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    desktopBridge = ExpDesktopWindowBridge.Create(compositor, nativeWindow.WindowId);
+                    PInvoke.User32.ShowWindow(
+                        NativeWindowHelper.GetHwndFromWindowId(desktopBridge.ChildWindowId),
+                        PInvoke.User32.WindowShowStyle.SW_SHOW);
+                    desktopBridge.FillTopLevelWindow = true;
+                    // create new content object and place it into the desktop window bridge
+                    ContentHelper contentHelper = new ContentHelper(compositor);
+                    desktopBridge.Connect(contentHelper.Content, contentHelper.InputSite);
+                    m_currentMinigame.Start(m_context, contentHelper.RootVisual, contentHelper.InputSite);
 
                     // start timer
                     m_context.Timer.Start(GetInterval());
@@ -179,6 +179,7 @@ namespace GamifiedInputApp
                 if (state == MinigameState.Pass)
                 {
                     m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+                    m_context.Score += 1;
                 }
                 else //if (state == MinigameState.Fail)
                 {
