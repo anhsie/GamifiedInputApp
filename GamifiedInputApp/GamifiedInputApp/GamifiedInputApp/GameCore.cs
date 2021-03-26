@@ -89,7 +89,6 @@ namespace GamifiedInputApp
             m_context.State = GameState.Start;
             m_context.Timer = new GameTimer();
             m_context.Timer.StepFrames = true;
-            m_context.Timer.AutoReset = false;
 
             m_loopTimer = new DispatcherTimer();
             m_rootVisual = rootVisual;
@@ -161,7 +160,8 @@ namespace GamifiedInputApp
                     m_currentMinigame.Start(m_context);
 
                     // start timer
-                    m_context.Timer.Start(GetInterval());
+                    m_context.Timer.Interval = GetInterval();
+                    m_context.Timer.Start();
                     m_context.State = GameState.Play;
                     break;
                 case GameState.Play:
@@ -190,7 +190,6 @@ namespace GamifiedInputApp
             {
                 m_currentMinigame.End(m_context, state);
                 m_currentMinigame = null;
-                m_context.Timer.Stop();
 
                 if (state == MinigameState.Pass)
                 {
