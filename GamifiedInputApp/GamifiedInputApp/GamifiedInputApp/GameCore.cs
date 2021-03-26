@@ -12,6 +12,7 @@ using System.IO;
 using Windows.Media.Playback;
 using Windows.Media.Core;
 using System.Collections.ObjectModel;
+using Microsoft.System;
 
 namespace GamifiedInputApp
 {
@@ -73,28 +74,31 @@ namespace GamifiedInputApp
 
         private GameContext m_context;
         private ExpDesktopWindowBridge desktopBridge;
-        private Visual m_rootVisual;
+        private MainWindow m_mainWindow;
         private ExpInputSite m_inputSite;
         private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
         private IMinigame m_currentMinigame;
-        private DispatcherTimer m_loopTimer;
+        private DispatcherQueueTimer m_loopTimer;
         private NativeWindowHelper nativeWindow;
 
         private MediaPlayer successMediaPlayer;
         private MediaPlayer failureMediaPlayer;
 
-        public GameCore(Visual rootVisual)
+        public bool IsRunning { get; private set; }
+
+        public GameCore(MainWindow mainWindow)
         {
             m_context.State = GameState.Start;
             m_context.Timer = new GameTimer();
             m_context.Timer.StepFrames = true;
 
-            m_loopTimer = new DispatcherTimer();
-            m_rootVisual = rootVisual;
-            compositor = rootVisual.Compositor;
+            m_mainWindow = mainWindow;
+            compositor = m_mainWindow.RootVisual.Compositor;
 
+            m_loopTimer = m_mainWindow.DispatcherQueue.CreateTimer();
             m_loopTimer.Interval = TimeSpan.FromSeconds(1.0 / MAX_FPS);
+            m_loopTimer.IsRepeating = true;
             m_loopTimer.Tick += GameLoop;
 
             successMediaPlayer = new MediaPlayer();
@@ -106,7 +110,8 @@ namespace GamifiedInputApp
 
         public void Run(IEnumerable<MinigameInfo> minigames)
         {
-            nativeWindow = new NativeWindowHelper(400, 400);
+            if (IsRunning) { return; }
+            nativeWindow = new NativeWindowHelper(m_mainWindow.GameBounds, m_mainWindow.Handle);
             nativeWindow.Show();
 
             // setup code here
@@ -125,7 +130,7 @@ namespace GamifiedInputApp
 
             // start game
             m_context.State = GameState.Start;
-            m_context.Score = 0;
+            IsRunning = true;
             m_loopTimer.Start();
         }
 
@@ -137,8 +142,9 @@ namespace GamifiedInputApp
 
         protected void GameLoop(Object source, object e)
         {
-            if (!m_loopTimer.IsEnabled) return; // timer is disabled, ignore remaining queued events
+            if (!IsRunning) { return; }
             nativeWindow.Show();
+
             switch (m_context.State)
             {
                 case GameState.Start:
@@ -171,6 +177,7 @@ namespace GamifiedInputApp
                 case GameState.Results:
                     // stop timer
                     m_loopTimer.Stop();
+                    IsRunning = false;
                     nativeWindow.Destroy();
                     break;
             }

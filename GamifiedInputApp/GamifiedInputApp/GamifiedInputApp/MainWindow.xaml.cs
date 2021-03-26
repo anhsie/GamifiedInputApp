@@ -22,8 +22,6 @@ using Microsoft.UI.Hosting.Experimental;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 using GamifiedInputApp.Minigames;
-using System.Diagnostics;
-using Microsoft.UI.Composition.Experimental;
 
 namespace GamifiedInputApp
 {
@@ -32,8 +30,10 @@ namespace GamifiedInputApp
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        GameCore gameCore;
-        Visual rootVisual;
+        public IntPtr? Handle { get; private set; } = null;
+        public Visual RootVisual { get; private set; } = null;
+
+        private GameCore GameCore;
         private ObservableCollection<MinigameItem> TreeSource;
         private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
@@ -45,15 +45,27 @@ namespace GamifiedInputApp
 
             this.screens = new Panel[] { MenuScreen, MinigameScreen, ResultsScreen };
             this.SetScreen(MenuScreen);
+            MinigameScreen.LayoutUpdated += MinigameScreen_LayoutUpdated;
 
             TreeSource = new ObservableCollection<MinigameItem>();
             ScoreSource = new ObservableCollection<ScoreItem>();
 
             PopulateMinigames();
+            RootVisual = MinigamePanel.GetVisualInternal();
 
-            rootVisual = MinigamePanel.GetVisualInternal();
-            rootVisual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
-            ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
+            GameCore = new GameCore(this);
+            GameCore.Results += GameCore_GoToResults;
+        }
+
+        public Rect GameBounds
+        {
+            get
+            {
+                GeneralTransform gt = MinigamePanel.TransformToVisual(Root);
+                Point offset = gt.TransformPoint(new Point(0.0, 0.0));
+                Point size = new Point(MinigamePanel.ActualSize.X, MinigamePanel.ActualSize.Y);
+                return new Rect(offset.X, offset.Y, size.X, size.Y);
+            }
         }
 
         private void PopulateMinigames()
@@ -104,11 +116,40 @@ namespace GamifiedInputApp
             }
         }
 
-        private void SetScreen(Panel target)
+        private Panel SetScreen(Panel target)
         {
+            Panel previous = null;
             foreach (Panel screen in this.screens)
             {
+                if (screen.Visibility == Visibility.Visible) { previous = screen; }
                 screen.Visibility = (screen == target) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return previous;
+        }
+
+        private void StartGame()
+        {
+            try
+            {
+                GameCore.Run(MinigamePicker.SelectedItems
+                    .Where(item => (item as MinigameItem).IsMinigame)
+                    .Select(item => (item as MinigameItem).Info));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // no minigames selected
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        private void Window_Activated(object sender, object args) => Handle = PInvoke.User32.GetActiveWindow();
+
+        private void MinigameScreen_LayoutUpdated(object sender, object e)
+        {
+            if (MinigameScreen.Visibility == Visibility.Visible && !GameCore.IsRunning)
+            {
+                // try to run the game
+                DispatcherQueue.TryEnqueue(StartGame);
             }
         }
 
@@ -128,25 +169,7 @@ namespace GamifiedInputApp
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                if (gameCore == null)
-                {
-                    gameCore = new GameCore(rootVisual);
-                    gameCore.Results += GameCore_GoToResults;
-                }
-
-                // run selected minigames
-                gameCore.Run(MinigamePicker.SelectedItems
-                    .Where(item => (item as MinigameItem).IsMinigame)
-                    .Select(item => (item as MinigameItem).Info));
-                SetScreen(MinigameScreen);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // no minigames selected
-                Console.WriteLine(ex.ToString());
-            }
+            SetScreen(MinigameScreen); // game runs in MinigameScreen_LayoutUpdated
         }
 
         private void GoToMenuButton_Click(object sender, RoutedEventArgs e)

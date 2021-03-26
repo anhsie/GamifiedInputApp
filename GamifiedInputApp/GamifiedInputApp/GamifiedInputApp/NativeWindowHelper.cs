@@ -10,16 +10,28 @@ namespace GamifiedInputApp
     public class NativeWindowHelper
     {
         IntPtr m_hwnd;
+        Rect m_rect;
+        IntPtr? m_parent;
 
-        public NativeWindowHelper(int width, int height)
+        private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private static readonly IntPtr HWND_TOP = new IntPtr(0);
+        private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+
+        private static readonly double ScaleFactor = PInvoke.User32.GetDpiForSystem() / 96.0;
+
+        public NativeWindowHelper(Windows.Foundation.Rect bounds, IntPtr? hWndParent)
         {
             string className = "Minigame Window Class";
+            m_rect = new Rect(bounds);
+            m_parent = hWndParent;
 
             unsafe
             {
                 PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
                 windowClass.style = PInvoke.User32.ClassStyles.CS_HREDRAW | PInvoke.User32.ClassStyles.CS_VREDRAW;
                 windowClass.lpfnWndProc = WindowProcedure;
+                windowClass.hbrBackground = PInvoke.Gdi32.GetStockObject(PInvoke.Gdi32.StockObject.GRAY_BRUSH);
                 fixed (char* c = className)
                 {
                     windowClass.lpszClassName = c;
@@ -27,20 +39,19 @@ namespace GamifiedInputApp
                 PInvoke.User32.RegisterClassEx(ref windowClass);
             }
 
-            float scaleFactor = PInvoke.User32.GetDpiForSystem() / 96f;
-            int scaledWidth = (int)((float)width * scaleFactor);
-            int scaledHeight = (int)((float)height * scaleFactor);
+            PInvoke.User32.WindowStyles dwStyle = hWndParent.HasValue ?
+                PInvoke.User32.WindowStyles.WS_CHILD : PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             m_hwnd = PInvoke.User32.CreateWindowEx(
-                    PInvoke.User32.WindowStylesEx.WS_EX_OVERLAPPEDWINDOW,
+                    0,
                     className,
                     "Minigame Window",
-                    PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW,
-                    0,
-                    0,
-                    scaledWidth,
-                    scaledHeight,
-                    new IntPtr(),
+                    dwStyle,
+                    m_rect.x,
+                    m_rect.y,
+                    m_rect.cx,
+                    m_rect.cy,
+                    hWndParent.GetValueOrDefault(),
                     new IntPtr(),
                     new IntPtr(),
                     new IntPtr());
@@ -48,7 +59,14 @@ namespace GamifiedInputApp
 
         public void Show()
         {
-            PInvoke.User32.ShowWindow(m_hwnd, PInvoke.User32.WindowShowStyle.SW_SHOW);
+            PInvoke.User32.SetWindowPos(
+                m_hwnd,
+                HWND_TOP,
+                m_rect.x,
+                m_rect.y,
+                m_rect.cx,
+                m_rect.cy,
+                PInvoke.User32.SetWindowPosFlags.SWP_SHOWWINDOW);
         }
 
         public void Destroy()
@@ -77,6 +95,22 @@ namespace GamifiedInputApp
         {
             Debugger.Log(1, "Windows Message", msg.ToString());
             return PInvoke.User32.DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
+        }
+
+        public struct Rect
+        {
+            public Rect(Windows.Foundation.Rect bounds)
+            {
+                x = (int)(bounds.X * ScaleFactor);
+                y = (int)(bounds.Y * ScaleFactor);
+                cx = (int)(bounds.Width * ScaleFactor);
+                cy = (int)(bounds.Height * ScaleFactor);
+            }
+
+            public int x;
+            public int y;
+            public int cx;
+            public int cy;
         }
     }
 }
