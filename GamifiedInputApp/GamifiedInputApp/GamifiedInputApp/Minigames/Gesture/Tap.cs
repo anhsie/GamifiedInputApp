@@ -156,7 +156,7 @@ namespace GamifiedInputApp.Minigames.Gesture
 
         private void SpawnAlien()
         {
-            var rand = new Random().Next(1, 10);
+            var rand = new Random().Next(9);
 
             if (currentAlienIndex != null)
             {
