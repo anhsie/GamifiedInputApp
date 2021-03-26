@@ -42,23 +42,18 @@ namespace GamifiedInputApp
         public ResultsEventArgs(GameContext context)
         {
             TimeLeft = context.Timer.TimeRemaining.ToString(TimeFormat);
-            s_results[0].Value = context.Cleared.ToString();
-            s_results[1].Value = context.Score.ToString();
-            s_results[2].Value = context.Fastest.HasValue ? context.Fastest?.ToString(TimeFormat) : "---";
-            Results = new(s_results);
             GoToResults = context.State == GameState.Results;
+            Results = new()
+            {
+                new ScoreItem() { Title = "Cleared", Value = context.Cleared.ToString() },
+                new ScoreItem() { Title = "Score", Value = context.Score.ToString() },
+                new ScoreItem() { Title = "Fastest", Value = context.Fastest?.ToString(TimeFormat) }
+            };
         }
 
-        public ReadOnlyCollection<ScoreItem> Results { get; }
+        public Collection<ScoreItem> Results { get; }
         public string TimeLeft { get; }
         public bool GoToResults { get; }
-
-        private static readonly Collection<ScoreItem> s_results = new()
-        {
-            new ScoreItem() { Title = "Cleared", Value = "0" },
-            new ScoreItem() { Title = "Score", Value = "0" },
-            new ScoreItem() { Title = "Fastest", Value = "0" }
-        };
     }
 
     public class GameCore
@@ -75,7 +70,6 @@ namespace GamifiedInputApp
         private GameContext m_context;
         private ExpDesktopWindowBridge desktopBridge;
         private MainWindow m_mainWindow;
-        private ExpInputSite m_inputSite;
         private Compositor compositor;
         private Queue<IMinigame> m_minigameQueue;
         private IMinigame m_currentMinigame;
@@ -200,14 +194,22 @@ namespace GamifiedInputApp
 
                 if (state == MinigameState.Pass)
                 {
-                    m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
-                    m_context.Score += 1;
+                    TimeSpan elapsed = m_context.Timer.TimeElapsed;
+
+                    m_context.Cleared++;
+                    // note: TimeRemaining would be bias as things speed up, so we use TimeElapsed for score
+                    m_context.Score += Math.Max(100, (int)(MAX_TIME - elapsed).TotalMilliseconds);
+                    // note: Fastest is nullable, so it may not have a value. Use MAX_TIME to compare in that case
+                    if (elapsed < m_context.Fastest.GetValueOrDefault(MAX_TIME)) { m_context.Fastest = elapsed; }
+
                     successMediaPlayer.Play();
+                    m_context.State = (m_minigameQueue.Count > 0) ? GameState.Start : GameState.Results;
+
                 }
                 else //if (state == MinigameState.Fail)
                 {
-                    m_context.State = GameState.Results;
                     failureMediaPlayer.Play();
+                    m_context.State = GameState.Results;
                 }
             }
 

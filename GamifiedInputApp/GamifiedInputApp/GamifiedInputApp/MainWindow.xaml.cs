@@ -155,11 +155,9 @@ namespace GamifiedInputApp
 
         private void GameCore_GoToResults(object sender, ResultsEventArgs e)
         {
+            ScoreSource.Clear();
+            foreach (ScoreItem item in e.Results) { ScoreSource.Add(item); }
             TimeRemaining.Text = e.TimeLeft;
-            if (ScoreSource.Count() == 0)
-            {
-                foreach (ScoreItem item in e.Results) { ScoreSource.Add(item); }
-            }
 
             if (e.GoToResults)
             {

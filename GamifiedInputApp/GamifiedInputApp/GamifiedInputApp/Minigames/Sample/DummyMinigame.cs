@@ -24,7 +24,7 @@ namespace GamifiedInputApp.Minigames.Sample
 
             // Do update logic for minigame
 
-            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
+            return m_sprite.Offset.X > 400 ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
         }
 
         public void End(in GameContext gameContext, in MinigameState finalState)
@@ -36,7 +36,7 @@ namespace GamifiedInputApp.Minigames.Sample
 
         /***** Animation functions *****/
 
-        private const float SPRITE_SPEED = 1.0f;
+        private const float SPRITE_SPEED = 0.2f;
 
         private void Setup(ContainerVisual rootVisual)
         {
@@ -57,8 +57,6 @@ namespace GamifiedInputApp.Minigames.Sample
             Vector3 offset = m_sprite.Offset;
             offset.X += (dt * SPRITE_SPEED);
             m_sprite.Offset = offset;
-
-            Console.WriteLine(dt);
         }
         
         private void Cleanup()
