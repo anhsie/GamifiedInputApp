@@ -4,7 +4,7 @@ using Windows.Globalization.DateTimeFormatting;
 namespace GamifiedInputApp
 {
     // Custom timer class with getters for start and end times
-    public class GameTimer : System.Timers.Timer
+    public class GameTimer
     {
         private DateTime m_startTime;
         private DateTime m_endTime;
@@ -12,19 +12,8 @@ namespace GamifiedInputApp
         private DateTime m_currFrame;
         private DateTime m_lastFrame;
 
-        public bool StepFrames { get; set; }
-
-        public GameTimer() : base()
-        {
-            Elapsed += ElapsedEvent;
-            StepFrames = false;
-        }
-
-        protected new void Dispose()
-        {
-            Elapsed -= ElapsedEvent;
-            base.Dispose();
-        }
+        public bool StepFrames { get; set; } = false;
+        public double Interval { get; set; } = 1000;
 
         /// <summary>
         /// Get the current time, as seen by the timer
@@ -50,7 +39,7 @@ namespace GamifiedInputApp
         /// <summary>
         /// Returns true if the timer has finished (and AutoReset is off) or false otherwise
         /// </summary>
-        public bool Finished => !AutoReset && TimeRemaining.TotalMilliseconds <= 0;
+        public bool Finished => TimeRemaining.TotalMilliseconds <= 0;
 
         /// <summary>
         /// Should be called once per game loop, prior to calling update() to process game logic
@@ -62,25 +51,7 @@ namespace GamifiedInputApp
             m_currFrame = DateTime.Now;
         }
 
-        public new void Start()
-        {
-            ResetTimer();
-            base.Start();
-        }
-
-        public void Start(double interval)
-        {
-            this.Interval = interval;
-            Start();
-        }
-
-
-        private void ElapsedEvent(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (AutoReset) { ResetTimer(); }
-        }
-
-        private void ResetTimer()
+        public void Start()
         {
             m_startTime = DateTime.Now;
             m_endTime = m_startTime.AddMilliseconds(Interval);

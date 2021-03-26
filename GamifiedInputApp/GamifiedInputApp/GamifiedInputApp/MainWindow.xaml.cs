@@ -22,8 +22,6 @@ using Microsoft.UI.Hosting.Experimental;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 using GamifiedInputApp.Minigames;
-using System.Diagnostics;
-using Microsoft.UI.Composition.Experimental;
 
 namespace GamifiedInputApp
 {
@@ -32,26 +30,42 @@ namespace GamifiedInputApp
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        GameCore gameCore;
-        Visual rootVisual;
+        public IntPtr? Handle { get; private set; } = null;
+        public Visual RootVisual { get; private set; } = null;
+
+        private GameCore GameCore;
         private ObservableCollection<MinigameItem> TreeSource;
         private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
+        private Panel[] screens;
 
         public MainWindow()
         {
             this.InitializeComponent();
-            Minigame.Visibility = Visibility.Collapsed;
-            Results.Visibility = Visibility.Collapsed;
+
+            this.screens = new Panel[] { MenuScreen, MinigameScreen, ResultsScreen };
+            this.SetScreen(MenuScreen);
+            MinigameScreen.LayoutUpdated += MinigameScreen_LayoutUpdated;
 
             TreeSource = new ObservableCollection<MinigameItem>();
             ScoreSource = new ObservableCollection<ScoreItem>();
 
             PopulateMinigames();
+            RootVisual = MinigamePanel.GetVisualInternal();
 
-            rootVisual = MinigamePanel.GetVisualInternal();
-            rootVisual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
-            ElementCompositionPreview.SetElementChildVisual(Root, rootVisual);
+            GameCore = new GameCore(this);
+            GameCore.Results += GameCore_GoToResults;
+        }
+
+        public Rect GameBounds
+        {
+            get
+            {
+                GeneralTransform gt = MinigamePanel.TransformToVisual(Root);
+                Point offset = gt.TransformPoint(new Point(0.0, 0.0));
+                Point size = new Point(MinigamePanel.ActualSize.X, MinigamePanel.ActualSize.Y);
+                return new Rect(offset.X, offset.Y, size.X, size.Y);
+            }
         }
 
         private void PopulateMinigames()
@@ -102,36 +116,22 @@ namespace GamifiedInputApp
             }
         }
 
-        private void GameCore_GoToResults(object sender, ResultsEventArgs e)
+        private Panel SetScreen(Panel target)
         {
-            TimeRemaining.Text = e.TimeLeft;
-            if (ScoreSource.Count() == 0)
+            Panel previous = null;
+            foreach (Panel screen in this.screens)
             {
-                foreach (ScoreItem item in e.Results) { ScoreSource.Add(item); }
+                if (screen.Visibility == Visibility.Visible) { previous = screen; }
+                screen.Visibility = (screen == target) ? Visibility.Visible : Visibility.Collapsed;
             }
-
-            if (e.GoToResults)
-            {
-                Minigame.Visibility = Visibility.Collapsed;
-                Results.Visibility = Visibility.Visible;
-            }
+            return previous;
         }
 
-        private void startButton_Click(object sender, RoutedEventArgs e)
+        private void StartGame()
         {
             try
             {
-                if (gameCore == null)
-                {
-                    gameCore = new GameCore(rootVisual);
-                    gameCore.Results += GameCore_GoToResults;
-                }
-
-                // run selected minigames
-                Menu.Visibility = Visibility.Collapsed;
-                Minigame.Visibility = Visibility.Visible;
-
-                gameCore.Run(MinigamePicker.SelectedItems
+                GameCore.Run(MinigamePicker.SelectedItems
                     .Where(item => (item as MinigameItem).IsMinigame)
                     .Select(item => (item as MinigameItem).Info));
             }
@@ -142,10 +142,39 @@ namespace GamifiedInputApp
             }
         }
 
+        private void Window_Activated(object sender, object args) => Handle = PInvoke.User32.GetActiveWindow();
+
+        private void MinigameScreen_LayoutUpdated(object sender, object e)
+        {
+            if (MinigameScreen.Visibility == Visibility.Visible && !GameCore.IsRunning)
+            {
+                // try to run the game
+                DispatcherQueue.TryEnqueue(StartGame);
+            }
+        }
+
+        private void GameCore_GoToResults(object sender, ResultsEventArgs e)
+        {
+            TimeRemaining.Text = e.TimeLeft;
+            if (ScoreSource.Count() == 0)
+            {
+                foreach (ScoreItem item in e.Results) { ScoreSource.Add(item); }
+            }
+
+            if (e.GoToResults)
+            {
+                SetScreen(ResultsScreen);
+            }
+        }
+
+        private void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetScreen(MinigameScreen); // game runs in MinigameScreen_LayoutUpdated
+        }
+
         private void GoToMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            Results.Visibility = Visibility.Collapsed;
-            Menu.Visibility = Visibility.Visible;
+            SetScreen(MenuScreen);
         }
 
         private void InputPicker_Checked(object sender, RoutedEventArgs e)

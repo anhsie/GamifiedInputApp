@@ -7,12 +7,13 @@ namespace GamifiedInputApp.Minigames.Sample
 {
     class DummyMinigame : IMinigame
     {
+        private ContainerVisual rootVisual;
         private SpriteVisual m_sprite;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "Dummy Minigame", SupportedDeviceTypes.None);
 
-        public void Start(in GameContext gameContext, ContentHelper contentHelper)
+        public void Start(in GameContext gameContext)
         {
-            this.Setup(contentHelper.RootVisual); // Setup game board
+            this.Setup(gameContext.Content.RootVisual); // Setup game board
 
             // Do start logic for minigame
         }
@@ -33,14 +34,13 @@ namespace GamifiedInputApp.Minigames.Sample
             // Do cleanup logic for minigame
         }
 
-        /*******************************/
         /***** Animation functions *****/
-        /*******************************/
 
         private const float SPRITE_SPEED = 1.0f;
 
         private void Setup(ContainerVisual rootVisual)
         {
+            this.rootVisual = rootVisual;
             // Setup game board here
             Compositor compositor = rootVisual.Compositor;
             m_sprite = compositor.CreateSpriteVisual();
@@ -63,6 +63,7 @@ namespace GamifiedInputApp.Minigames.Sample
         
         private void Cleanup()
         {
+            rootVisual.Children.RemoveAll();
             m_sprite = null;
         }
     }

@@ -13,7 +13,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 {
     class CharacterReceived : IMinigame
     {
-        private const float SPRITE_SPEED = 0.25f;
+        private const float SPRITE_SPEED = 0.15f;
 
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
@@ -25,14 +25,70 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CharacterReceived", SupportedDeviceTypes.Keyboard);
 
-        public void Start(in GameContext gameContext, ContentHelper contentHelper)
+        public void Start(in GameContext gameContext)
         {
-            this.rootVisual = contentHelper.RootVisual;
-            this.inputSite = contentHelper.InputSite;
+            rootVisual = gameContext.Content.RootVisual;
+            inputSite = gameContext.Content.InputSite;
             compositor = rootVisual.Compositor;
-            this.Setup(rootVisual, inputSite); // Setup game board
 
-            // Do start logic for minigame
+            this.Setup(); // Setup game board
+
+            // Set focus on the new window so that keyboard input goes through properly
+            var focusController = ExpFocusController.GetForInputSite(inputSite);
+            focusController.TrySetFocus();
+
+            var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
+            keyboardInput.CharacterReceived += CharacterReceivedEventHandler;
+        }
+
+        public MinigameState Update(in GameContext gameContext)
+        {
+            this.Animate(gameContext); // Animate game board
+
+            // Do update logic for minigame
+            
+            // TODO: fail based on size of window
+            if(letterVisual != null && letterVisual.Offset.Y > 400)
+            {
+                return MinigameState.Fail;
+            }
+
+            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
+        }
+
+        public void End(in GameContext gameContext, in MinigameState finalState)
+        {
+            var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
+            keyboardInput.CharacterReceived -= CharacterReceivedEventHandler;
+
+            this.Cleanup(); // Cleanup game board
+        }
+
+        /******* Event functions *******/
+
+        private void CharacterReceivedEventHandler(object sender, Windows.UI.Core.CharacterReceivedEventArgs args)
+        {
+            var keyCode = args.KeyCode;
+            // make sure key is from a-z
+            if (keyCode >= 97 && keyCode <= 123)
+            {
+                var index = keyCode - 97;
+                if (index == ansIndex)
+                {
+                    rootVisual.Children.Remove(letterVisual);
+                    letterVisual = null;
+                }
+            }
+        }
+
+        /***** Animation functions *****/
+
+        private void Setup()
+        {
+            SetupImages();
+
+            // Setup game board here
+            CreateNewLetterVisual();
         }
 
         private void SetupImages()
@@ -66,51 +122,15 @@ namespace GamifiedInputApp.Minigames.Keyboard
             letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_Z.png")));
         }
 
-        public MinigameState Update(in GameContext gameContext)
+        private void CreateNewLetterVisual()
         {
-            this.Animate(gameContext); // Animate game board
-
-            // Do update logic for minigame
-            
-            // TODO: fail based on size of window
-            if(letterVisual != null && letterVisual.Offset.Y > 500)
-            {
-                return MinigameState.Fail;
-            }
-
-            return gameContext.Timer.Finished ? MinigameState.Pass : MinigameState.Play; // Return new state (auto pass here)
-        }
-
-        public void End(in GameContext gameContext, in MinigameState finalState)
-        {
-            this.Cleanup(); // Cleanup game board
-
-            // Do cleanup logic for minigame
-        }
-
-
-        private void Setup(ContainerVisual rootVisual, ExpInputSite inputSite)
-        {
-            SetupImages();
-
-            if(inputSite != null)
-            {
-                // Set focus on the new window so that keyboard input goes through properly
-                var focusController = ExpFocusController.GetForInputSite(inputSite);
-                focusController.TrySetFocus();
-
-                var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
-                keyboardInput.CharacterReceived += CharacterReceivedEventHandler;
-            }
-
             var random = new Random();
-            ansIndex = (uint) random.Next(0, 25);
+            ansIndex = (uint)random.Next(0, 26);
 
-            // Setup game board here
             letterVisual = compositor.CreateSpriteVisual();
             letterVisual.Size = new Vector2(100, 100);
             // TODO: Random X based on size of window
-            letterVisual.Offset = new Vector3(random.Next(0,500),0,0);
+            letterVisual.Offset = new Vector3(random.Next(0, 300), 0, 0);
             var surfaceBrush = compositor.CreateSurfaceBrush();
             surfaceBrush.Surface = letterImages[(int)ansIndex];
             letterVisual.Brush = surfaceBrush;
@@ -128,32 +148,17 @@ namespace GamifiedInputApp.Minigames.Keyboard
                 offset.Y += (dt * SPRITE_SPEED);
                 letterVisual.Offset = offset;
             }
+            else
+            {
+                CreateNewLetterVisual();
+            }
         }
 
         private void Cleanup()
         {
             letterVisual = null;
             rootVisual.Children.RemoveAll();
-
-            if (inputSite != null)
-            {
-                var keyboardInput = ExpKeyboardInput.GetForInputSite(inputSite);
-                keyboardInput.CharacterReceived -= CharacterReceivedEventHandler;
-            }
         }
 
-        private void CharacterReceivedEventHandler(object sender, Windows.UI.Core.CharacterReceivedEventArgs args)
-        {
-            var keyCode = args.KeyCode;
-            // make sure key is from a-z
-            if (keyCode >= 97 && keyCode <= 123)
-            {
-                var index = keyCode - 97;
-                if(index == ansIndex)
-                {
-                    letterVisual = null;
-                }
-            }
-        }
     }
 }
