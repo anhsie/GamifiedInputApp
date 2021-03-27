@@ -23,7 +23,6 @@ namespace GamifiedInputApp.Minigames.Cursor
         private CursorType ansCursorType;
         private MinigameState currentState;
 
-        private NativeWindowHelper window;
         private ExpInputSite inputSite;
         private ExpPointerCursorController cursorController;
         private ExpPointerInputObserver pointerInputObserver;
@@ -33,7 +32,6 @@ namespace GamifiedInputApp.Minigames.Cursor
 
         public void Start(in GameContext gameContext)
         {
-            window = gameContext.Window;
             this.Setup(gameContext.Content.RootVisual); // Setup game board
             
             // Do start logic for minigame
@@ -42,6 +40,7 @@ namespace GamifiedInputApp.Minigames.Cursor
                 this.inputSite = gameContext.Content.InputSite;
                 cursorController = ExpPointerCursorController.GetForInputSite(inputSite);
                 pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputSite);
+                pointerInputObserver.PointerMoved += PointerInputObserver_PointerMoved;
                 pointerInputObserver.PointerReleased += PointerInputObserver_PointerReleased;
             }
         }
@@ -49,32 +48,6 @@ namespace GamifiedInputApp.Minigames.Cursor
         public MinigameState Update(in GameContext gameContext)
         {
             // Do update logic for minigame
-            if (cursorController != null)
-            {
-                // Cursor position is returned in screen coordinates, so transform to window coordinates
-                var cursorPositionAbsolute = cursorController.Position;
-                var windowRect = window.GetWindowRect();
-                var cursorPositionRelative = new Windows.Foundation.Point(cursorPositionAbsolute.X - windowRect.X, cursorPositionAbsolute.Y - windowRect.Y);
-                CoreCursor cursor = new CoreCursor(CoreCursorType.Arrow, 99);
-                for (int i = 0; i < cursorVisuals.Count; i++)
-                {
-                    if (InsideVisual(cursorVisuals[i], cursorPositionRelative))
-                    {
-                        switch (cursorTypesForVisuals[i])
-                        {
-                            case CursorType.Cross:
-                                cursor = new CoreCursor(CoreCursorType.Cross, 99);
-                                break;
-                            case CursorType.IBeam:
-                                cursor = new CoreCursor(CoreCursorType.IBeam, 99);
-                                break;
-                        }
-                        break;
-                    }
-                }
-                cursorController.Cursor = cursor;
-            }
-
             if(currentState != MinigameState.Play)
             {
                 return currentState;
@@ -85,6 +58,7 @@ namespace GamifiedInputApp.Minigames.Cursor
 
         public void End(in GameContext gameContext, in MinigameState finalState)
         {
+            pointerInputObserver.PointerMoved -= PointerInputObserver_PointerMoved;
             pointerInputObserver.PointerReleased -= PointerInputObserver_PointerReleased;
 
             this.Cleanup(); // Cleanup game board
@@ -111,6 +85,30 @@ namespace GamifiedInputApp.Minigames.Cursor
             }
         }
 
+        private void PointerInputObserver_PointerMoved(ExpPointerInputObserver sender, ExpPointerEventArgs args)
+        {
+            // Note: ExpPointerCursorController.Position returns the cursor position in screen space.
+            // Because we would need a reference to the window to transform this position to window space,
+            // we do not want to use this API.
+            CoreCursor cursor = new CoreCursor(CoreCursorType.Arrow, 99);
+            for (int i = 0; i < cursorVisuals.Count; i++)
+            {
+                if (InsideVisual(cursorVisuals[i], args.CurrentPoint.Position))
+                {
+                    switch (cursorTypesForVisuals[i])
+                    {
+                        case CursorType.Cross:
+                            cursor = new CoreCursor(CoreCursorType.Cross, 99);
+                            break;
+                        case CursorType.IBeam:
+                            cursor = new CoreCursor(CoreCursorType.IBeam, 99);
+                            break;
+                    }
+                    break;
+                }
+            }
+            cursorController.Cursor = cursor;
+        }
 
         /***** Animation functions *****/
 

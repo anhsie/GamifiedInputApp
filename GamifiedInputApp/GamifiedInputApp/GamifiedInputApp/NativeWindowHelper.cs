@@ -91,14 +91,6 @@ namespace GamifiedInputApp
             m_pinnedWindowsProcedureDelegate.Free();
         }
 
-        public Windows.Foundation.Rect GetWindowRect()
-        {
-            PInvoke.RECT rect;
-            PInvoke.User32.GetWindowRect(m_hwnd, out rect);
-
-            return new Windows.Foundation.Rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-        }
-
         public Microsoft.UI.WindowId WindowId
         { 
             get { return GetWindowIdFromHwnd(m_hwnd); } 
@@ -128,7 +120,6 @@ namespace GamifiedInputApp
 
         static unsafe IntPtr WindowProcedure(IntPtr hWnd, PInvoke.User32.WindowMessage msg, void* wParam, void* lParam)
         {
-            Debugger.Log(1, "Windows Message", msg.ToString());
             return PInvoke.User32.DefWindowProc(hWnd, msg, (IntPtr)wParam, (IntPtr)lParam);
         }
 
