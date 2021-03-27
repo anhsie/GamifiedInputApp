@@ -144,8 +144,8 @@ namespace GamifiedInputApp
         {
             public DipAwareRect(ScalingRect bounds)
             {
-                x = (int)(bounds.Left * ScaleFactor);
-                y = (int)(bounds.Top * ScaleFactor);
+                x = (int)(bounds.ScaledLeft * ScaleFactor);
+                y = (int)(bounds.ScaledTop * ScaleFactor);
                 cx = (int)(bounds.ScaledWidth * ScaleFactor);
                 cy = (int)(bounds.ScaledHeight * ScaleFactor);
             }

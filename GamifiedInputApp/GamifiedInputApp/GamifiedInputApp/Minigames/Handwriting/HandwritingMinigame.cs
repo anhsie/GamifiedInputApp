@@ -62,7 +62,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_pointerInput.PointerMoved += M_pointerInput_PointerMoved;
             m_pointerInput.PointerReleased += M_pointerInput_PointerReleased;
 
-            UpdateLayout(gameContext.Content.Content);
+            UpdateLayout(gameContext.Content);
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -148,7 +148,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             }
         }
 
-        void Content_StateChanged(ExpCompositionContent sender, ExpCompositionContentEventArgs args)
+        void Content_SizeChanged(ContentHelper sender, object args)
         {
             UpdateLayout(sender);
         }
@@ -162,7 +162,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_letterSprite.Brush = compositor.CreateSurfaceBrush(m_letterImages[m_letterIndex]);
             m_letterSprite.Size = new Vector2(100, 100);
             gameContext.Content.RootVisual.Children.InsertAtTop(m_letterSprite);
-            gameContext.Content.Content.StateChanged += Content_StateChanged;
+            gameContext.Content.SizeChanged += Content_SizeChanged;
 
             var ellipse = compositor.CreateEllipseGeometry();
             ellipse.Center = new Vector2(5, 5);
@@ -186,10 +186,11 @@ namespace GamifiedInputApp.Minigames.Handwriting
             }
         }
 
-        void UpdateLayout(ExpCompositionContent content)
+        void UpdateLayout(ContentHelper content)
         {
-            float contentWidth = content.ActualSize.X;
-            float contentHeight = content.ActualSize.Y;
+            ScalingRect rect = content.GameBounds;
+            float contentWidth = (float)rect.ActualWidth;
+            float contentHeight = (float)rect.ActualHeight;
 
             // Set the letter image to fill the window but maintain its aspect ratio.
             float lesserDimension = Math.Min(contentWidth, contentHeight);
@@ -213,7 +214,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_inkAnalyzer.ClearDataForAllStrokes();
             m_ellipseVisuals = null;
 
-            gameContext.Content.Content.StateChanged -= Content_StateChanged;
+            gameContext.Content.SizeChanged -= Content_SizeChanged;
             m_letterSprite = null;
         }
 

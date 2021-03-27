@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Experimental;
 using Microsoft.UI.Input.Experimental;
+using Microsoft.UI.Xaml;
+using Windows.Foundation;
 
 namespace GamifiedInputApp
 {
@@ -28,43 +30,34 @@ namespace GamifiedInputApp
 
             m_backgroundVisual = m_compositor.CreateSpriteVisual();
             m_backgroundVisual.Brush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.White);
-            m_backgroundVisual.Offset = new System.Numerics.Vector3((float)rect.Left, (float)rect.Top, 0.0f);
             m_backgroundVisual.Size = new System.Numerics.Vector2((float)rect.ActualWidth, (float)rect.ActualHeight);
             m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
             m_content.Root = m_backgroundVisual;
 
             m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
 
-            m_mainWinodw.SizeChanged += M_mainWindow_SizeChanged;
+            m_mainWinodw.SizeChanged += M_MainWinodw_SizeChanged;
         }
 
         public void Dispose()
         {
             m_backgroundVisual.Dispose();
             m_backgroundVisual = null;
-            m_mainWinodw.SizeChanged -= M_mainWindow_SizeChanged;
+            m_mainWinodw.SizeChanged -= M_MainWinodw_SizeChanged;
         }
 
-        private void M_mainWindow_SizeChanged(object sender, object args)
+        private void M_MainWinodw_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
             ScalingRect rect = m_mainWinodw.GameBounds;
-            m_backgroundVisual.Offset = new System.Numerics.Vector3((float)rect.Left, (float)rect.Top, 0.0f);
             m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
+
+            SizeChanged(this, args);
         }
 
-        public ExpCompositionContent Content
-        {
-            get { return m_content; }
-        }
-
-        public ExpInputSite InputSite
-        {
-            get { return m_inputSite; }
-        }
-
-        public SpriteVisual RootVisual
-        {
-            get { return m_backgroundVisual; }
-        }
+        public event TypedEventHandler<ContentHelper, WindowSizeChangedEventArgs> SizeChanged;
+        public ScalingRect GameBounds => m_mainWinodw.GameBounds;
+        public ExpCompositionContent Content => m_content;
+        public ExpInputSite InputSite => m_inputSite;
+        public SpriteVisual RootVisual => m_backgroundVisual;
     }
 }

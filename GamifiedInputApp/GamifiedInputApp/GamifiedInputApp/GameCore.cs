@@ -157,6 +157,7 @@ namespace GamifiedInputApp
                     m_currentMinigame = m_minigameQueue.Dequeue();
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
+                    m_desktopBridge?.Dispose();
                     m_desktopBridge = ExpDesktopWindowBridge.Create(m_compositor, m_nativeWindow.WindowId);
                     NativeWindowHelper.DipAwareRect rect = new(m_mainWindow.GameBounds);
                     PInvoke.User32.SetWindowPos(

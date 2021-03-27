@@ -53,18 +53,7 @@ namespace GamifiedInputApp
             GameCore.Results += GameCore_GoToResults;
         }
 
-        public ScalingRect GameBounds
-        {
-            get
-            {
-                GeneralTransform gt = MinigamePanel.TransformToVisual(Root);
-                Point offset = gt.TransformPoint(new Point(0.0, 0.0));
-                Point size = new Point(MinigamePanel.ActualSize.X, MinigamePanel.ActualSize.Y);
-                Point scaledSize = gt.TransformPoint(size);
-
-                return new ScalingRect(offset.X, offset.Y, size.X, size.Y, scaledSize.X / size.X, scaledSize.Y / size.Y);
-            }
-        }
+        public ScalingRect GameBounds => new ScalingRect(MinigamePanel);
 
         private void PopulateMinigames()
         {
@@ -230,24 +219,28 @@ namespace GamifiedInputApp
 
     public struct ScalingRect
     {
-        public ScalingRect(double left, double top, double width, double height, double scaleX, double scaleY)
+        public ScalingRect(UIElement element)
         {
-            Left = left;
-            Top = top;
-            ActualWidth = width;
-            ActualHeight = height;
-            ScaleX = scaleX;
-            ScaleY = scaleY;
+            Transform = element.TransformToVisual(element.XamlRoot.Content);
+            ActualOffset = new Point(element.ActualOffset.X, element.ActualOffset.Y);
+            ActualSize = new Point(element.ActualSize.X, element.ActualSize.Y);
         }
 
-        public double Left;
-        public double Top;
-        public double ScaleX;
-        public double ScaleY;
-        public double ActualWidth;
-        public double ActualHeight;
-        public double ScaledWidth { get => ActualWidth * ScaleX; }
-        public double ScaledHeight { get => ActualHeight * ScaleY; }
+        public GeneralTransform Transform { get; }
+        public Point ActualOffset { get; }
+        public Point ActualSize { get; }
+        public double ActualLeft => ActualOffset.X;
+        public double ActualTop => ActualOffset.Y;
+        public double ActualWidth => ActualSize.X;
+        public double ActualHeight => ActualSize.Y;
+        public Point ScaledOffset => Transform.TransformPoint(ActualOffset);
+        public Point ScaledSize => Transform.TransformPoint(ActualSize);
+        public double ScaledLeft => ScaledOffset.X;
+        public double ScaledTop => ScaledOffset.Y;
+        public double ScaledWidth => ScaledSize.X;
+        public double ScaledHeight => ScaledSize.Y;
+        public double ScaleX => ScaledWidth / ActualWidth;
+        public double ScaleY => ScaledHeight / ActualHeight;
     }
 
     public class ScoreItem
