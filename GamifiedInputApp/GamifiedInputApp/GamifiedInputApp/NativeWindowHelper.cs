@@ -22,7 +22,7 @@ namespace GamifiedInputApp
 
         private static readonly double ScaleFactor = PInvoke.User32.GetDpiForSystem() / 96.0;
 
-        public NativeWindowHelper(Windows.Foundation.Rect bounds, IntPtr? hWndParent)
+        public NativeWindowHelper(ScalingRect bounds, IntPtr? hWndParent)
         {
             string className = "Minigame Window Class";
             m_rect = new DipAwareRect(bounds);
@@ -61,8 +61,10 @@ namespace GamifiedInputApp
                     new IntPtr());
         }
 
-        public void Show()
+        public void Show(ScalingRect bounds)
         {
+            m_rect = new DipAwareRect(bounds);
+
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
@@ -78,11 +80,11 @@ namespace GamifiedInputApp
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
-                m_rect.x,
-                m_rect.y,
-                m_rect.cx,
-                m_rect.cy,
-                PInvoke.User32.SetWindowPosFlags.SWP_HIDEWINDOW);
+                0,
+                0,
+                0,
+                0,
+                PInvoke.User32.SetWindowPosFlags.SWP_HIDEWINDOW | PInvoke.User32.SetWindowPosFlags.SWP_NOMOVE | PInvoke.User32.SetWindowPosFlags.SWP_NOSIZE);
         }
 
         public void Destroy()
@@ -134,12 +136,12 @@ namespace GamifiedInputApp
 
         public struct DipAwareRect
         {
-            public DipAwareRect(Windows.Foundation.Rect bounds)
+            public DipAwareRect(ScalingRect bounds)
             {
-                x = (int)(bounds.X * ScaleFactor);
-                y = (int)(bounds.Y * ScaleFactor);
-                cx = (int)(bounds.Width * ScaleFactor);
-                cy = (int)(bounds.Height * ScaleFactor);
+                x = (int)(bounds.Left * ScaleFactor);
+                y = (int)(bounds.Top * ScaleFactor);
+                cx = (int)(bounds.Width * bounds.ScaleX * ScaleFactor);
+                cy = (int)(bounds.Height * bounds.ScaleY * ScaleFactor);
             }
 
             public int x;

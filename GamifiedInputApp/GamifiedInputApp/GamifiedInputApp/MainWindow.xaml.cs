@@ -11,12 +11,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Composition;
-using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Hosting.Experimental;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -37,13 +33,13 @@ namespace GamifiedInputApp
         private ObservableCollection<MinigameItem> TreeSource;
         private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
-        private Panel[] screens;
+        private Viewbox[] screens;
 
         public MainWindow()
         {
             this.InitializeComponent();
 
-            this.screens = new Panel[] { MenuScreen, MinigameScreen, ResultsScreen };
+            this.screens = new Viewbox[] { MenuScreen, MinigameScreen, ResultsScreen };
             this.SetScreen(MenuScreen);
             MinigameScreen.LayoutUpdated += MinigameScreen_LayoutUpdated;
 
@@ -57,14 +53,16 @@ namespace GamifiedInputApp
             GameCore.Results += GameCore_GoToResults;
         }
 
-        public Rect GameBounds
+        public ScalingRect GameBounds
         {
             get
             {
                 GeneralTransform gt = MinigamePanel.TransformToVisual(Root);
                 Point offset = gt.TransformPoint(new Point(0.0, 0.0));
                 Point size = new Point(MinigamePanel.ActualSize.X, MinigamePanel.ActualSize.Y);
-                return new Rect(offset.X, offset.Y, size.X, size.Y);
+                Point scaledSize = gt.TransformPoint(size);
+
+                return new ScalingRect(offset.X, offset.Y, size.X, size.Y, scaledSize.X / size.X, scaledSize.Y / size.Y);
             }
         }
 
@@ -116,10 +114,10 @@ namespace GamifiedInputApp
             }
         }
 
-        private Panel SetScreen(Panel target)
+        private Viewbox SetScreen(Viewbox target)
         {
-            Panel previous = null;
-            foreach (Panel screen in this.screens)
+            Viewbox previous = null;
+            foreach (Viewbox screen in this.screens)
             {
                 if (screen.Visibility == Visibility.Visible) { previous = screen; }
                 screen.Visibility = (screen == target) ? Visibility.Visible : Visibility.Collapsed;
@@ -228,6 +226,26 @@ namespace GamifiedInputApp
                 child.IsChecked = (selected == 0) ? false : (unselected == 0) ? true : null;  // null for indeterminate
             }
         }
+    }
+
+    public struct ScalingRect
+    {
+        public ScalingRect(double left, double top, double width, double height, double scaleX, double scaleY)
+        {
+            Left = left;
+            Top = top;
+            Width = width;
+            Height = height;
+            ScaleX = scaleX;
+            ScaleY = scaleY;
+        }
+
+        public double Left;
+        public double Top;
+        public double Width;
+        public double Height;
+        public double ScaleX;
+        public double ScaleY;
     }
 
     public class ScoreItem

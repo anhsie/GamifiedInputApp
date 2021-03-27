@@ -11,30 +11,43 @@ namespace GamifiedInputApp
 {
     public class ContentHelper
     {
+        MainWindow m_mainWinodw;
         Compositor m_compositor;
         ExpCompositionContent m_content;
         ExpInputSite m_inputSite;
         SpriteVisual m_backgroundVisual;
 
-        public ContentHelper(Compositor compositor)
+        public ContentHelper(MainWindow mainWindow)
         {
-            m_compositor = compositor;
-            m_content = ExpCompositionContent.Create(compositor);
+            m_mainWinodw = mainWindow;
+            m_compositor = m_mainWinodw.Compositor;
+            m_content = ExpCompositionContent.Create(m_compositor);
             m_content.AppData = this;
+
+            ScalingRect rect = m_mainWinodw.GameBounds;
 
             m_backgroundVisual = m_compositor.CreateSpriteVisual();
             m_backgroundVisual.Brush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.White);
-            m_backgroundVisual.Size = new System.Numerics.Vector2(400, 400);
+            m_backgroundVisual.Size = new System.Numerics.Vector2((float)rect.Width, (float)rect.Height);
+            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
             m_content.Root = m_backgroundVisual;
 
             m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
 
-            m_content.StateChanged += M_content_StateChanged;
+            m_mainWinodw.SizeChanged += M_mainWindow_SizeChanged;
         }
 
-        private void M_content_StateChanged(ExpCompositionContent sender, ExpCompositionContentEventArgs args)
+        public void Dispose()
         {
-            m_backgroundVisual.Size = m_content.ActualSize;
+            m_backgroundVisual.Dispose();
+            m_backgroundVisual = null;
+            m_mainWinodw.SizeChanged -= M_mainWindow_SizeChanged;
+        }
+
+        private void M_mainWindow_SizeChanged(object sender, object args)
+        {
+            ScalingRect rect = m_mainWinodw.GameBounds;
+            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
         }
 
         public ExpCompositionContent Content

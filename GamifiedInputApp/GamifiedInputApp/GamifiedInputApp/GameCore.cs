@@ -112,8 +112,6 @@ namespace GamifiedInputApp
                 m_nativeWindow = new NativeWindowHelper(m_mainWindow.GameBounds, m_mainWindow.Handle);
             }
 
-            m_nativeWindow.Show();
-
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
             foreach (MinigameInfo info in minigames)
@@ -144,7 +142,7 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!IsRunning) { return; }
-            m_nativeWindow.Show();
+            m_nativeWindow.Show(m_mainWindow.GameBounds);
 
             // send results containing updated time remaining,
             // and also score if the state is no longer Play
@@ -176,7 +174,7 @@ namespace GamifiedInputApp
                         PInvoke.User32.WindowShowStyle.SW_SHOW);
                     
                     // create new content object and place it into the desktop window bridge
-                    m_context.Content = new ContentHelper(m_compositor);
+                    m_context.Content = new ContentHelper(m_mainWindow);
                     m_desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
                     m_currentMinigame.Start(m_context);
 
@@ -196,6 +194,8 @@ namespace GamifiedInputApp
                     m_nativeWindow.Hide();
                     m_desktopBridge?.Dispose();
                     m_desktopBridge = null;
+                    m_context.Content?.Dispose();
+                    m_context.Content = null;
                     break;
             }
         }

@@ -65,109 +65,115 @@
             </DataTemplate>
         </Grid.Resources>
 
-        <Grid x:Name="MenuScreen" Style="{StaticResource ScreenStyle}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="100" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="50" />
-            </Grid.RowDefinitions>
-
-            <TreeView x:Name="MinigamePicker" Grid.Row="0" Grid.Column="0" Style="{StaticResource FillParent}"
-                      Background="AliceBlue" SelectionMode="Multiple" SelectionChanged="MinigamePicker_SelectionChanged"
-                      ItemsSource="{x:Bind TreeSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}" >
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="True" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    </Style>
-                </TreeView.ItemContainerStyle>
-            </TreeView>
-
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1" Style="{StaticResource FillParent}"
-                            BorderThickness="1" BorderBrush="LightBlue">
-                <Button x:Name="StartButton" Width="100" VerticalAlignment="Center" Click="startButton_Click">Start</Button>
-            </StackPanel>
-
-            <Grid x:Name="InputDevicePickers" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource FillParent}"
-                  BorderThickness="1" BorderBrush="LightBlue">
+        <Viewbox x:Name="MenuScreen" Stretch="Fill">
+            <Grid Style="{StaticResource ScreenStyle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+
+                <TreeView x:Name="MinigamePicker" Grid.Row="0" Grid.Column="0" Style="{StaticResource FillParent}"
+                          Background="AliceBlue" SelectionMode="Multiple" SelectionChanged="MinigamePicker_SelectionChanged"
+                          ItemsSource="{x:Bind TreeSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}" >
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                </TreeView>
+
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1" Style="{StaticResource FillParent}"
+                                BorderThickness="1" BorderBrush="LightBlue">
+                    <Button x:Name="StartButton" Width="100" VerticalAlignment="Center" Click="startButton_Click">Start</Button>
+                </StackPanel>
+
+                <Grid x:Name="InputDevicePickers" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource FillParent}"
+                      BorderThickness="1" BorderBrush="LightBlue">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                
+                    <CheckBox x:Name="MouseInputPicker" Content="Mouse" IsThreeState="True" Grid.Column="0" HorizontalAlignment="Stretch"
+                        Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
+                    <CheckBox x:Name="TouchInputPicker" Content="Touch" IsThreeState="True" Grid.Column="1" HorizontalAlignment="Stretch"
+                        Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
+                    <CheckBox x:Name="PenInputPicker" Content="Pen" IsThreeState="True" Grid.Column="2" HorizontalAlignment="Stretch"
+                        Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
+                    <CheckBox x:Name="KeyInputPicker" Content="Keyboard" IsThreeState="True" Grid.Column="3" HorizontalAlignment="Stretch"
+                        Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
+                </Grid>
+            </Grid>
+        </Viewbox>
+
+        <Viewbox x:Name="MinigameScreen" Stretch="Fill">
+            <Grid Style="{StaticResource ScreenStyle}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="MinigamePanel" Style="{StaticResource MinigameStyle}" Grid.Column="0" />
+
+                <Grid x:Name="ScorePanel" Grid.Column="1" Style="{StaticResource FillParent}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="100" />
+                    </Grid.RowDefinitions>
+                
+                    <ItemsControl ItemsSource="{x:Bind ScoreSource}"  ItemTemplate="{StaticResource ScoreTemplate}" Grid.Row="0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Style="{StaticResource FillParent}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <StackPanel Orientation="Vertical" Style="{StaticResource FillParent}" Grid.Row="1"
+                                BorderThickness="1" BorderBrush="LightBlue">
+                        <TextBlock Text="Fail In" TextAlignment="Center" FontSize="20" Margin="5,5,5,5" />
+                        <TextBlock x:Name="TimeRemaining" Text="" TextAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5,5,5,5" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Viewbox>
+
+        <Viewbox x:Name="ResultsScreen" Stretch="Fill">
+            <Grid Style="{StaticResource ScreenStyle}">
+                <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="100" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                
-                <CheckBox x:Name="MouseInputPicker" Content="Mouse" IsThreeState="True" Grid.Column="0" HorizontalAlignment="Stretch"
-                    Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="TouchInputPicker" Content="Touch" IsThreeState="True" Grid.Column="1" HorizontalAlignment="Stretch"
-                    Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="PenInputPicker" Content="Pen" IsThreeState="True" Grid.Column="2" HorizontalAlignment="Stretch"
-                    Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-                <CheckBox x:Name="KeyInputPicker" Content="Keyboard" IsThreeState="True" Grid.Column="3" HorizontalAlignment="Stretch"
-                    Checked="InputPicker_Checked" Unchecked="InputPicker_Unchecked" Indeterminate="InputPicker_Indeterminate"/>
-            </Grid>
-        </Grid>
-
-        <Grid x:Name="MinigameScreen" Style="{StaticResource ScreenStyle}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="100" />
-            </Grid.ColumnDefinitions>
-
-            <Border x:Name="MinigamePanel" Style="{StaticResource MinigameStyle}" Grid.Column="0" />
-
-            <Grid x:Name="ScorePanel" Grid.Column="1" Style="{StaticResource FillParent}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="100" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                
-                <ItemsControl ItemsSource="{x:Bind ScoreSource}"  ItemTemplate="{StaticResource ScoreTemplate}" Grid.Row="0">
+
+                <ItemsControl Grid.Column="1" Grid.Row="1" Style="{StaticResource FillParent}"
+                              ItemsSource="{x:Bind ScoreSource}" ItemTemplate="{StaticResource ScoreTemplate}" >
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" Style="{StaticResource FillParent}" />
+                            <StackPanel Orientation="Horizontal" Style="{StaticResource FillParent}"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
-                <StackPanel Orientation="Vertical" Style="{StaticResource FillParent}" Grid.Row="1"
-                            BorderThickness="1" BorderBrush="LightBlue">
-                    <TextBlock Text="Fail In" TextAlignment="Center" FontSize="20" Margin="5,5,5,5" />
-                    <TextBlock x:Name="TimeRemaining" Text="" TextAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5,5,5,5" />
+                <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1" Style="{StaticResource FillParent}"
+                                BorderThickness="1" BorderBrush="LightBlue">
+                    <Button x:Name="GoToMenuButton" Click="GoToMenuButton_Click" VerticalAlignment="Center" HorizontalAlignment="Stretch">Main Menu</Button>
                 </StackPanel>
             </Grid>
-        </Grid>
-
-        <Grid x:Name="ResultsScreen" Style="{StaticResource ScreenStyle}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="300" />
-                <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="100" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <ItemsControl Grid.Column="1" Grid.Row="1" Style="{StaticResource FillParent}"
-                          ItemsSource="{x:Bind ScoreSource}" ItemTemplate="{StaticResource ScoreTemplate}" >
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Style="{StaticResource FillParent}"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-
-            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1" Style="{StaticResource FillParent}"
-                            BorderThickness="1" BorderBrush="LightBlue">
-                <Button x:Name="GoToMenuButton" Click="GoToMenuButton_Click" VerticalAlignment="Center" HorizontalAlignment="Stretch">Main Menu</Button>
-            </StackPanel>
-        </Grid>
+        </Viewbox>
     </Grid>
     
 </Window>
