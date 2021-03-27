@@ -144,7 +144,6 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!IsRunning) { return; }
-            m_nativeWindow.Show();
 
             // send results containing updated time remaining,
             // and also score if the state is no longer Play
