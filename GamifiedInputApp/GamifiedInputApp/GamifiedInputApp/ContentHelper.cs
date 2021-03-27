@@ -28,7 +28,8 @@ namespace GamifiedInputApp
 
             m_backgroundVisual = m_compositor.CreateSpriteVisual();
             m_backgroundVisual.Brush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.White);
-            m_backgroundVisual.Size = new System.Numerics.Vector2((float)rect.Width, (float)rect.Height);
+            m_backgroundVisual.Offset = new System.Numerics.Vector3((float)rect.Left, (float)rect.Top, 0.0f);
+            m_backgroundVisual.Size = new System.Numerics.Vector2((float)rect.ActualWidth, (float)rect.ActualHeight);
             m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
             m_content.Root = m_backgroundVisual;
 
@@ -47,6 +48,7 @@ namespace GamifiedInputApp
         private void M_mainWindow_SizeChanged(object sender, object args)
         {
             ScalingRect rect = m_mainWinodw.GameBounds;
+            m_backgroundVisual.Offset = new System.Numerics.Vector3((float)rect.Left, (float)rect.Top, 0.0f);
             m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
         }
 

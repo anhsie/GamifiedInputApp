@@ -234,18 +234,20 @@ namespace GamifiedInputApp
         {
             Left = left;
             Top = top;
-            Width = width;
-            Height = height;
+            ActualWidth = width;
+            ActualHeight = height;
             ScaleX = scaleX;
             ScaleY = scaleY;
         }
 
         public double Left;
         public double Top;
-        public double Width;
-        public double Height;
         public double ScaleX;
         public double ScaleY;
+        public double ActualWidth;
+        public double ActualHeight;
+        public double ScaledWidth { get => ActualWidth * ScaleX; }
+        public double ScaledHeight { get => ActualHeight * ScaleY; }
     }
 
     public class ScoreItem

@@ -11,8 +11,7 @@ namespace GamifiedInputApp
     public class NativeWindowHelper
     {
         IntPtr m_hwnd;
-        DipAwareRect m_rect;
-        IntPtr? m_parent;
+        MainWindow m_mainWindow;
         GCHandle m_pinnedWindowsProcedureDelegate;
 
         private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
@@ -22,12 +21,11 @@ namespace GamifiedInputApp
 
         private static readonly double ScaleFactor = PInvoke.User32.GetDpiForSystem() / 96.0;
 
-        public NativeWindowHelper(ScalingRect bounds, IntPtr? hWndParent)
+        public NativeWindowHelper(MainWindow mainWindow)
         {
-            string className = "Minigame Window Class";
-            m_rect = new DipAwareRect(bounds);
-            m_parent = hWndParent;
+            m_mainWindow = mainWindow;
 
+            string className = "Minigame Window Class";
             unsafe
             {
                 PInvoke.User32.WNDCLASSEX windowClass = PInvoke.User32.WNDCLASSEX.Create();
@@ -43,7 +41,10 @@ namespace GamifiedInputApp
                 PInvoke.User32.RegisterClassEx(ref windowClass);
             }
 
-            PInvoke.User32.WindowStyles dwStyle = hWndParent.HasValue ?
+            DipAwareRect rect = new(m_mainWindow.GameBounds);
+            IntPtr? parent = m_mainWindow.Handle;
+
+            PInvoke.User32.WindowStyles dwStyle = parent.HasValue ?
                 PInvoke.User32.WindowStyles.WS_CHILD : PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             m_hwnd = PInvoke.User32.CreateWindowEx(
@@ -51,32 +52,33 @@ namespace GamifiedInputApp
                     className,
                     "Minigame Window",
                     dwStyle,
-                    m_rect.x,
-                    m_rect.y,
-                    m_rect.cx,
-                    m_rect.cy,
-                    hWndParent.GetValueOrDefault(),
+                    rect.x,
+                    rect.y,
+                    rect.cx,
+                    rect.cy,
+                    parent.GetValueOrDefault(),
                     new IntPtr(),
                     new IntPtr(),
                     new IntPtr());
         }
 
-        public void Show(ScalingRect bounds)
+        public void Show()
         {
-            m_rect = new DipAwareRect(bounds);
-
+            DipAwareRect rect = new(m_mainWindow.GameBounds);
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
-                m_rect.x,
-                m_rect.y,
-                m_rect.cx,
-                m_rect.cy,
+                rect.x,
+                rect.y,
+                rect.cx,
+                rect.cy,
                 PInvoke.User32.SetWindowPosFlags.SWP_SHOWWINDOW);
+            m_mainWindow.SizeChanged += M_mainWindow_SizeChanged;
         }
 
         public void Hide()
         {
+            m_mainWindow.SizeChanged -= M_mainWindow_SizeChanged;
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
@@ -87,10 +89,24 @@ namespace GamifiedInputApp
                 PInvoke.User32.SetWindowPosFlags.SWP_HIDEWINDOW | PInvoke.User32.SetWindowPosFlags.SWP_NOMOVE | PInvoke.User32.SetWindowPosFlags.SWP_NOSIZE);
         }
 
+        private void M_mainWindow_SizeChanged(object sender, Microsoft.UI.Xaml.WindowSizeChangedEventArgs args)
+        {
+            DipAwareRect rect = new(m_mainWindow.GameBounds);
+            PInvoke.User32.SetWindowPos(
+                m_hwnd,
+                HWND_TOP,
+                rect.x,
+                rect.y,
+                rect.cx,
+                rect.cy,
+                PInvoke.User32.SetWindowPosFlags.SWP_SHOWWINDOW);
+        }
+
         public void Destroy()
         {
             PInvoke.User32.DestroyWindow(m_hwnd);
             m_pinnedWindowsProcedureDelegate.Free();
+            m_hwnd = IntPtr.Zero;
         }
 
         public Windows.Foundation.Rect GetWindowRect()
@@ -104,16 +120,6 @@ namespace GamifiedInputApp
         public Microsoft.UI.WindowId WindowId
         { 
             get { return GetWindowIdFromHwnd(m_hwnd); } 
-        }
-
-        public int Width
-        {
-            get { return m_rect.cx; }
-        }
-
-        public int Height
-        {
-            get { return m_rect.cy; }
         }
 
         public static IntPtr GetHwndFromWindowId(Microsoft.UI.WindowId windowId)
@@ -140,8 +146,8 @@ namespace GamifiedInputApp
             {
                 x = (int)(bounds.Left * ScaleFactor);
                 y = (int)(bounds.Top * ScaleFactor);
-                cx = (int)(bounds.Width * bounds.ScaleX * ScaleFactor);
-                cy = (int)(bounds.Height * bounds.ScaleY * ScaleFactor);
+                cx = (int)(bounds.ScaledWidth * ScaleFactor);
+                cy = (int)(bounds.ScaledHeight * ScaleFactor);
             }
 
             public int x;

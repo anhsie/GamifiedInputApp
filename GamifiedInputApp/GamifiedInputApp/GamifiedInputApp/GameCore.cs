@@ -109,8 +109,9 @@ namespace GamifiedInputApp
 
             if (m_nativeWindow == null)
             {
-                m_nativeWindow = new NativeWindowHelper(m_mainWindow.GameBounds, m_mainWindow.Handle);
+                m_nativeWindow = new NativeWindowHelper(m_mainWindow);
             }
+            m_nativeWindow.Show();
 
             // setup code here
             m_minigameQueue = new Queue<IMinigame>();
@@ -142,7 +143,6 @@ namespace GamifiedInputApp
         protected void GameLoop(Object source, object e)
         {
             if (!IsRunning) { return; }
-            m_nativeWindow.Show(m_mainWindow.GameBounds);
 
             // send results containing updated time remaining,
             // and also score if the state is no longer Play
@@ -158,13 +158,14 @@ namespace GamifiedInputApp
 
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
                     m_desktopBridge = ExpDesktopWindowBridge.Create(m_compositor, m_nativeWindow.WindowId);
+                    NativeWindowHelper.DipAwareRect rect = new(m_mainWindow.GameBounds);
                     PInvoke.User32.SetWindowPos(
                         NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
                         IntPtr.Zero,
                         0,
                         0,
-                        m_nativeWindow.Width,
-                        m_nativeWindow.Height,
+                        rect.cx,
+                        rect.cy,
                         PInvoke.User32.SetWindowPosFlags.SWP_NOACTIVATE |
                             PInvoke.User32.SetWindowPosFlags.SWP_NOOWNERZORDER |
                             PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER
