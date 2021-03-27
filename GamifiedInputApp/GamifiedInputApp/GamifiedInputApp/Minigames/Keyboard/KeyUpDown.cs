@@ -15,7 +15,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
     {
         private const float SPRITE_SPEED = 0.25f;
 
-        private NativeWindowHelper window;
+        private ContentHelper content;
         private ContainerVisual rootVisual;
         private SpriteVisual lightVisual;
         private SpriteVisual objectVisual;
@@ -31,7 +31,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         public void Start(in GameContext gameContext)
         {
-            window = gameContext.Window;
+            content = gameContext.Content;
             rootVisual = gameContext.Content.RootVisual;
             inputSite = gameContext.Content.InputSite;
             compositor = rootVisual.Compositor;
@@ -131,9 +131,11 @@ namespace GamifiedInputApp.Minigames.Keyboard
             objectVisual.Size = new Vector2(80, 80);
 
             // Generate object within the game window bounds
-            var windowRect = window.GetWindowRect();
             var random = new Random();
-            objectVisual.Offset = new Vector3(random.Next(100, (int)windowRect.Width - 100), random.Next(100, (int)windowRect.Height - 100), 0);
+            // TODO: content.Content.ActualSize returns 0,0 initially, but we would like to use this
+            // instead of hardcoding size
+            var size = new Vector2(400, 400);
+            objectVisual.Offset = new Vector3(random.Next(100, (int)size.X - 100), random.Next(100, (int)size.Y - 100), 0);
             rootVisual.Children.InsertAtTop(objectVisual);
 
             lightVisual = compositor.CreateSpriteVisual();

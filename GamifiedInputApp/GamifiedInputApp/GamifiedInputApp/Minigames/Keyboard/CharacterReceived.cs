@@ -15,7 +15,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
     {
         private const float SPRITE_SPEED = 0.15f;
 
-        private NativeWindowHelper window;
+        private ContentHelper content;
         private ContainerVisual rootVisual;
         private SpriteVisual letterVisual;
         private ExpInputSite inputSite;
@@ -28,7 +28,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
 
         public void Start(in GameContext gameContext)
         {
-            window = gameContext.Window;
+            content = gameContext.Content;
             rootVisual = gameContext.Content.RootVisual;
             inputSite = gameContext.Content.InputSite;
             compositor = rootVisual.Compositor;
@@ -48,8 +48,7 @@ namespace GamifiedInputApp.Minigames.Keyboard
             this.Animate(gameContext); // Animate game board
 
             // Do update logic for minigame
-            var windowRect = window.GetWindowRect();
-            if (letterVisual != null && letterVisual.Offset.Y > windowRect.Height)
+            if (letterVisual != null && letterVisual.Offset.Y > content.Content.ActualSize.Y)
             {
                 return MinigameState.Fail;
             }
@@ -98,32 +97,12 @@ namespace GamifiedInputApp.Minigames.Keyboard
         private void SetupImages()
         {
             letterImages = new List<ICompositionSurface>();
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_A.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_B.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_C.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_D.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_E.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_F.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_G.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_H.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_I.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_J.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_K.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_L.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_M.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_N.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_O.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_P.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_Q.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_R.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_S.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_T.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_U.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_V.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_W.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_X.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_Y.png")));
-            letterImages.Add(LoadedImageSurface.StartLoadFromUri(new Uri("ms-appx:///Images/LetterTiles/letter_Z.png")));
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                letterImages.Add(
+                    LoadedImageSurface.StartLoadFromUri(
+                        new Uri(string.Format("ms-appx:///Images/LetterTiles/letter_{0}.png", c))));
+            }
         }
 
         private void CreateNewLetterVisual()
@@ -135,8 +114,11 @@ namespace GamifiedInputApp.Minigames.Keyboard
             letterVisual.Size = new Vector2(100, 100);
 
             // Make sure letter is within the window
-            var windowRect = window.GetWindowRect();
-            letterVisual.Offset = new Vector3(random.Next(0, (int)windowRect.Width - 100), 0, 0);
+
+            // TODO: content.Content.ActualSize returns 0,0 initially, but we would like to use this
+            // instead of hardcoding size
+            var size = new Vector2(400, 400);
+            letterVisual.Offset = new Vector3(random.Next(0, (int)size.X - 100), 0, 0);
 
             var surfaceBrush = compositor.CreateSurfaceBrush();
             surfaceBrush.Surface = letterImages[(int)ansIndex];
