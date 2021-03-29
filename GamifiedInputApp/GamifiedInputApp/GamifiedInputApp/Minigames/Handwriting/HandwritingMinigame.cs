@@ -30,6 +30,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
         List<ICompositionSurface> m_letterImages;
         int m_nextEllipse = 0;
         List<ShapeVisual> m_ellipseVisuals;
+        ContentHelper m_gameContent;
 
         public HandwritingMinigame()
         {
@@ -57,6 +58,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_nextEllipse = 0;
 
             // Setup our pointer input observer to track handwriting.
+            m_gameContent = gameContext.Content;
             m_pointerInput = ExpPointerInputObserver.CreateForInputSite(gameContext.Content.InputSite);
             m_pointerInput.PointerPressed += M_pointerInput_PointerPressed;
             m_pointerInput.PointerMoved += M_pointerInput_PointerMoved;
@@ -91,7 +93,8 @@ namespace GamifiedInputApp.Minigames.Handwriting
 
             if (pointerPoint.IsInContact && !pointerPoint.Properties.IsEraser)
             {
-                var position = pointerPoint.Position;
+                var transform = m_gameContent.GameBounds.Transform.Inverse;
+                var position = transform.TransformPoint(pointerPoint.Position);
                 DrawHandwritingDot((int)position.X, (int)position.Y);
             }
         }

@@ -224,6 +224,8 @@ namespace GamifiedInputApp
             Transform = element.TransformToVisual(element.XamlRoot.Content);
             ActualOffset = new Point(element.ActualOffset.X, element.ActualOffset.Y);
             ActualSize = new Point(element.ActualSize.X, element.ActualSize.Y);
+            ScaledOffset = Transform.TransformPoint(ActualOffset);
+            ScaledSize = Transform.TransformPoint(ActualSize);
         }
 
         public GeneralTransform Transform { get; }
@@ -233,8 +235,8 @@ namespace GamifiedInputApp
         public double ActualTop => ActualOffset.Y;
         public double ActualWidth => ActualSize.X;
         public double ActualHeight => ActualSize.Y;
-        public Point ScaledOffset => Transform.TransformPoint(ActualOffset);
-        public Point ScaledSize => Transform.TransformPoint(ActualSize);
+        public Point ScaledOffset { get; }
+        public Point ScaledSize { get; }
         public double ScaledLeft => ScaledOffset.X;
         public double ScaledTop => ScaledOffset.Y;
         public double ScaledWidth => ScaledSize.X;

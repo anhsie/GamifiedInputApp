@@ -27,6 +27,7 @@ namespace GamifiedInputApp.Minigames.Cursor
         private ExpPointerCursorController cursorController;
         private ExpPointerInputObserver pointerInputObserver;
         private ContainerVisual rootVisual;
+        private ContentHelper gameContent;
         private int VISUAL_SIZE = 100;
         MinigameInfo IMinigame.Info => new MinigameInfo(this, "CursorController", SupportedDeviceTypes.Spatial);
 
@@ -37,6 +38,7 @@ namespace GamifiedInputApp.Minigames.Cursor
             // Do start logic for minigame
             if (gameContext.Content.InputSite != null)
             {
+                this.gameContent = gameContext.Content;
                 this.inputSite = gameContext.Content.InputSite;
                 cursorController = ExpPointerCursorController.GetForInputSite(inputSite);
                 pointerInputObserver = ExpPointerInputObserver.CreateForInputSite(inputSite);
@@ -70,7 +72,8 @@ namespace GamifiedInputApp.Minigames.Cursor
         {
             for (int i = 0; i < cursorVisuals.Count; i++)
             {
-                if (InsideVisual(cursorVisuals[i], args.CurrentPoint.Position))
+                var transform = this.gameContent.GameBounds.Transform.Inverse;
+                if (InsideVisual(cursorVisuals[i], transform.TransformPoint(args.CurrentPoint.Position)))
                 {
                     if (cursorTypesForVisuals[i] == ansCursorType)
                     {
@@ -93,7 +96,8 @@ namespace GamifiedInputApp.Minigames.Cursor
             CoreCursor cursor = new CoreCursor(CoreCursorType.Arrow, 99);
             for (int i = 0; i < cursorVisuals.Count; i++)
             {
-                if (InsideVisual(cursorVisuals[i], args.CurrentPoint.Position))
+                var transform = this.gameContent.GameBounds.Transform.Inverse;
+                if (InsideVisual(cursorVisuals[i], transform.TransformPoint(args.CurrentPoint.Position)))
                 {
                     switch (cursorTypesForVisuals[i])
                     {
