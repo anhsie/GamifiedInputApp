@@ -19,7 +19,7 @@ namespace GamifiedInputApp
         private static readonly IntPtr HWND_TOP = new IntPtr(0);
         private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
 
-        private static readonly double ScaleFactor = PInvoke.User32.GetDpiForSystem() / 96.0;
+        public static readonly double ScaleFactor = PInvoke.User32.GetDpiForSystem() / 96.0;
 
         public NativeWindowHelper(MainWindow mainWindow)
         {

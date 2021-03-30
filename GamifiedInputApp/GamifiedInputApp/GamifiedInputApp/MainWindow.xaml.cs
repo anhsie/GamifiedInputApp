@@ -26,6 +26,9 @@ namespace GamifiedInputApp
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        public static readonly int DefaultWidth = (int)(800.0 * NativeWindowHelper.ScaleFactor);
+        public static readonly int DefaultHeight = (int)(600.0 * NativeWindowHelper.ScaleFactor);
+
         public IntPtr? Handle { get; private set; } = null;
         public Visual RootVisual { get; private set; } = null;
 
@@ -129,7 +132,16 @@ namespace GamifiedInputApp
             }
         }
 
-        private void Window_Activated(object sender, object args) => Handle = PInvoke.User32.GetActiveWindow();
+        private void Window_Activated(object sender, object args)
+        {
+            Handle = PInvoke.User32.GetActiveWindow();
+            if (Handle.HasValue)
+            {
+                PInvoke.User32.SetWindowPos(Handle.Value, IntPtr.Zero, 0, 0,
+                    DefaultWidth, DefaultHeight,
+                    PInvoke.User32.SetWindowPosFlags.SWP_NOMOVE | PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER);
+            }
+        }
 
         private void MinigameScreen_LayoutUpdated(object sender, object e)
         {
