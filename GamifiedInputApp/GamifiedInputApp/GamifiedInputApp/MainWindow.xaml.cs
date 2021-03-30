@@ -29,7 +29,7 @@ namespace GamifiedInputApp
         public static readonly int DefaultWidth = (int)(800.0 * NativeWindowHelper.ScaleFactor);
         public static readonly int DefaultHeight = (int)(600.0 * NativeWindowHelper.ScaleFactor);
 
-        public IntPtr? Handle { get; private set; } = null;
+        public IntPtr Handle { get; private set; } = IntPtr.Zero;
         public Visual RootVisual { get; private set; } = null;
 
         public event TypedEventHandler<UIElement, BoundsUpdatedEventArgs> BoundsUpdated
@@ -63,6 +63,8 @@ namespace GamifiedInputApp
 
             GameCore = new GameCore(this);
             GameCore.Results += GameCore_GoToResults;
+
+            Activated += Window_Activated;
         }
 
         public ScalingRect GameBounds => gameBounds.UpdateAndGet();
@@ -143,12 +145,13 @@ namespace GamifiedInputApp
         private void Window_Activated(object sender, object args)
         {
             Handle = PInvoke.User32.GetActiveWindow();
-            if (Handle.HasValue)
+            if (Handle != IntPtr.Zero)
             {
-                PInvoke.User32.SetWindowPos(Handle.Value, IntPtr.Zero, 0, 0,
+                PInvoke.User32.SetWindowPos(Handle, IntPtr.Zero, 0, 0,
                     DefaultWidth, DefaultHeight,
                     PInvoke.User32.SetWindowPosFlags.SWP_NOMOVE | PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER);
             }
+            Activated -= Window_Activated;
         }
 
         private void MinigameScreen_SizeChanged(object sender, object args) => gameBounds.MarkAsStale();

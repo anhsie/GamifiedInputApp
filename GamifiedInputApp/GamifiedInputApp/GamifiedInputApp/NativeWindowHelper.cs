@@ -42,9 +42,9 @@ namespace GamifiedInputApp
             }
 
             DipAwareRect rect = new(m_mainWindow.GameBounds);
-            IntPtr? parent = m_mainWindow.Handle;
+            IntPtr parent = m_mainWindow.Handle;
 
-            PInvoke.User32.WindowStyles dwStyle = parent.HasValue ?
+            PInvoke.User32.WindowStyles dwStyle = parent != IntPtr.Zero ?
                 PInvoke.User32.WindowStyles.WS_CHILD : PInvoke.User32.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             m_hwnd = PInvoke.User32.CreateWindowEx(
@@ -56,7 +56,7 @@ namespace GamifiedInputApp
                     rect.y,
                     rect.cx,
                     rect.cy,
-                    parent.GetValueOrDefault(),
+                    parent,
                     new IntPtr(),
                     new IntPtr(),
                     new IntPtr());
