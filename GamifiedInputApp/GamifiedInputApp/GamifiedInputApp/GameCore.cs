@@ -130,6 +130,9 @@ namespace GamifiedInputApp
             m_context.State = GameState.Start;
             IsRunning = true;
             m_loopTimer.Start();
+
+            // listen for bounds updates
+            m_mainWindow.BoundsUpdated += UpdateChildWindow;
         }
 
         private double GetInterval()
@@ -157,22 +160,11 @@ namespace GamifiedInputApp
                     // Create a new desktop bridge every time, because of a crash when connecting with a bridge with existing content
                     m_desktopBridge?.Dispose();
                     m_desktopBridge = ExpDesktopWindowBridge.Create(m_compositor, m_nativeWindow.WindowId);
-                    NativeWindowHelper.DipAwareRect rect = new(m_mainWindow.GameBounds);
-                    PInvoke.User32.SetWindowPos(
-                        NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
-                        IntPtr.Zero,
-                        0,
-                        0,
-                        rect.cx,
-                        rect.cy,
-                        PInvoke.User32.SetWindowPosFlags.SWP_NOACTIVATE |
-                            PInvoke.User32.SetWindowPosFlags.SWP_NOOWNERZORDER |
-                            PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER
-                        );
+                    UpdateChildWindow(null, new BoundsUpdatedEventArgs(m_mainWindow.GameBounds));
                     PInvoke.User32.ShowWindow(
                         NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
                         PInvoke.User32.WindowShowStyle.SW_SHOW);
-                    
+
                     // create new content object and place it into the desktop window bridge
                     m_context.Content = new ContentHelper(m_mainWindow);
                     m_desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
@@ -191,9 +183,14 @@ namespace GamifiedInputApp
                     // stop timer
                     m_loopTimer.Stop();
                     IsRunning = false;
+
+                    // dispose desktop bridge
+                    m_mainWindow.BoundsUpdated -= UpdateChildWindow;
                     m_nativeWindow.Hide();
                     m_desktopBridge?.Dispose();
                     m_desktopBridge = null;
+
+                    // dispose content helper
                     m_context.Content?.Dispose();
                     m_context.Content = null;
                     break;
@@ -234,6 +231,24 @@ namespace GamifiedInputApp
                     m_context.State = GameState.Results;
                 }
             }
+        }
+
+        private void UpdateChildWindow(object sender, BoundsUpdatedEventArgs args)
+        {
+            if (m_desktopBridge == null) return;
+
+            NativeWindowHelper.DipAwareRect rect = new(args.NewBounds);
+            PInvoke.User32.SetWindowPos(
+                NativeWindowHelper.GetHwndFromWindowId(m_desktopBridge.ChildWindowId),
+                IntPtr.Zero,
+                0,
+                0,
+                rect.cx,
+                rect.cy,
+                PInvoke.User32.SetWindowPosFlags.SWP_NOACTIVATE |
+                    PInvoke.User32.SetWindowPosFlags.SWP_NOOWNERZORDER |
+                    PInvoke.User32.SetWindowPosFlags.SWP_NOZORDER
+                );
         }
     }
 }

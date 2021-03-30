@@ -64,7 +64,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_pointerInput.PointerMoved += M_pointerInput_PointerMoved;
             m_pointerInput.PointerReleased += M_pointerInput_PointerReleased;
 
-            UpdateLayout(gameContext.Content);
+            UpdateLayout(gameContext.Content.GameBounds);
         }
 
         public MinigameState Update(in GameContext gameContext)
@@ -93,8 +93,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
 
             if (pointerPoint.IsInContact && !pointerPoint.Properties.IsEraser)
             {
-                var transform = m_gameContent.GameBounds.Transform.Inverse;
-                var position = transform.TransformPoint(pointerPoint.Position);
+                var position = m_gameContent.TransformInput(pointerPoint.Position);
                 DrawHandwritingDot((int)position.X, (int)position.Y);
             }
         }
@@ -151,9 +150,9 @@ namespace GamifiedInputApp.Minigames.Handwriting
             }
         }
 
-        void Content_SizeChanged(ContentHelper sender, object args)
+        void Content_BoundsUpdated(ContentHelper sender, BoundsUpdatedEventArgs args)
         {
-            UpdateLayout(sender);
+            UpdateLayout(args.NewBounds);
         }
 
         /***** Animation and Drawing functions *****/
@@ -165,7 +164,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_letterSprite.Brush = compositor.CreateSurfaceBrush(m_letterImages[m_letterIndex]);
             m_letterSprite.Size = new Vector2(100, 100);
             gameContext.Content.RootVisual.Children.InsertAtTop(m_letterSprite);
-            gameContext.Content.SizeChanged += Content_SizeChanged;
+            gameContext.Content.BoundsUpdated += Content_BoundsUpdated;
 
             var ellipse = compositor.CreateEllipseGeometry();
             ellipse.Center = new Vector2(5, 5);
@@ -189,11 +188,10 @@ namespace GamifiedInputApp.Minigames.Handwriting
             }
         }
 
-        void UpdateLayout(ContentHelper content)
+        void UpdateLayout(ScalingRect gameBounds)
         {
-            ScalingRect rect = content.GameBounds;
-            float contentWidth = (float)rect.ActualWidth;
-            float contentHeight = (float)rect.ActualHeight;
+            float contentWidth = (float)gameBounds.Actual.Width;
+            float contentHeight = (float)gameBounds.Actual.Height;
 
             // Set the letter image to fill the window but maintain its aspect ratio.
             float lesserDimension = Math.Min(contentWidth, contentHeight);
@@ -217,7 +215,7 @@ namespace GamifiedInputApp.Minigames.Handwriting
             m_inkAnalyzer.ClearDataForAllStrokes();
             m_ellipseVisuals = null;
 
-            gameContext.Content.SizeChanged -= Content_SizeChanged;
+            gameContext.Content.BoundsUpdated -= Content_BoundsUpdated;
             m_letterSprite = null;
         }
 

@@ -32,19 +32,28 @@ namespace GamifiedInputApp
         public IntPtr? Handle { get; private set; } = null;
         public Visual RootVisual { get; private set; } = null;
 
+        public event TypedEventHandler<UIElement, BoundsUpdatedEventArgs> BoundsUpdated
+        {
+            add { gameBounds.BoundsUpdated += value; }
+            remove { gameBounds.BoundsUpdated -= value; }
+        }
+
         private GameCore GameCore;
         private ObservableCollection<MinigameItem> TreeSource;
         private ObservableCollection<ScoreItem> ScoreSource;
         private IList<object> MinigameItems;
         private Viewbox[] screens;
+        private ScalingRect gameBounds;
 
         public MainWindow()
         {
             this.InitializeComponent();
 
+            gameBounds = new ScalingRect(MinigamePanel);
             this.screens = new Viewbox[] { MenuScreen, MinigameScreen, ResultsScreen };
             this.SetScreen(MenuScreen);
-            MinigameScreen.LayoutUpdated += MinigameScreen_LayoutUpdated;
+            MinigameScreen.SizeChanged += MinigameScreen_SizeChanged;
+            MinigameScreen.RegisterPropertyChangedCallback(Viewbox.VisibilityProperty, MinigameScreen_VisibilityChanged);
 
             TreeSource = new ObservableCollection<MinigameItem>();
             ScoreSource = new ObservableCollection<ScoreItem>();
@@ -56,8 +65,7 @@ namespace GamifiedInputApp
             GameCore.Results += GameCore_GoToResults;
         }
 
-        public ScalingRect GameBounds => new ScalingRect(MinigamePanel);
-
+        public ScalingRect GameBounds => gameBounds.UpdateAndGet();
         private void PopulateMinigames()
         {
             const string baseNamespace = "GamifiedInputApp.Minigames";
@@ -143,9 +151,11 @@ namespace GamifiedInputApp
             }
         }
 
-        private void MinigameScreen_LayoutUpdated(object sender, object e)
+        private void MinigameScreen_SizeChanged(object sender, object args) => gameBounds.MarkAsStale();
+
+        private void MinigameScreen_VisibilityChanged(object sender, object args)
         {
-            if (MinigameScreen.Visibility == Visibility.Visible && !GameCore.IsRunning)
+            if (MinigameScreen.Visibility == Visibility.Visible)
             {
                 // try to run the game
                 DispatcherQueue.TryEnqueue(StartGame);
@@ -170,7 +180,7 @@ namespace GamifiedInputApp
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            SetScreen(MinigameScreen); // game runs in MinigameScreen_LayoutUpdated
+            SetScreen(MinigameScreen); // game runs in MinigameScreen_VisibilityChanged
         }
 
         private void GoToMenuButton_Click(object sender, RoutedEventArgs e)
@@ -229,32 +239,47 @@ namespace GamifiedInputApp
         }
     }
 
-    public struct ScalingRect
+    public class BoundsUpdatedEventArgs
     {
+        public BoundsUpdatedEventArgs(ScalingRect newBounds) => NewBounds = newBounds.UpdateAndGet();
+        public ScalingRect NewBounds { get; }
+    }
+
+    public class ScalingRect
+    {
+        private UIElement m_element;
+        private bool m_stale;
+
+        public event TypedEventHandler<UIElement, BoundsUpdatedEventArgs> BoundsUpdated;
+
         public ScalingRect(UIElement element)
         {
-            Transform = element.TransformToVisual(element.XamlRoot.Content);
-            ActualOffset = new Point(element.ActualOffset.X, element.ActualOffset.Y);
-            ActualSize = new Point(element.ActualSize.X, element.ActualSize.Y);
-            ScaledOffset = Transform.TransformPoint(ActualOffset);
-            ScaledSize = Transform.TransformPoint(ActualSize);
+            m_element = element;
+            m_stale = false;
         }
 
-        public GeneralTransform Transform { get; }
-        public Point ActualOffset { get; }
-        public Point ActualSize { get; }
-        public double ActualLeft => ActualOffset.X;
-        public double ActualTop => ActualOffset.Y;
-        public double ActualWidth => ActualSize.X;
-        public double ActualHeight => ActualSize.Y;
-        public Point ScaledOffset { get; }
-        public Point ScaledSize { get; }
-        public double ScaledLeft => ScaledOffset.X;
-        public double ScaledTop => ScaledOffset.Y;
-        public double ScaledWidth => ScaledSize.X;
-        public double ScaledHeight => ScaledSize.Y;
-        public double ScaleX => ScaledWidth / ActualWidth;
-        public double ScaleY => ScaledHeight / ActualHeight;
+        public void MarkAsStale()
+        {
+            m_stale = true;
+            BoundsUpdated?.Invoke(m_element, new BoundsUpdatedEventArgs(this));
+        }
+
+        public ScalingRect UpdateAndGet()
+        {
+            if (m_stale && m_element.XamlRoot != null)
+            {
+                Transform = m_element.TransformToVisual(m_element.XamlRoot.Content);
+                Actual = new(m_element.ActualOffset.X, m_element.ActualOffset.Y, m_element.ActualSize.X, m_element.ActualSize.Y);
+                Scaled = Transform.TransformBounds(Actual);
+
+                m_stale = false;
+            }
+            return this;
+        }
+
+        public GeneralTransform Transform { get; private set; } = null;
+        public Rect Actual { get; private set; }
+        public Rect Scaled { get; private set; }
     }
 
     public class ScoreItem

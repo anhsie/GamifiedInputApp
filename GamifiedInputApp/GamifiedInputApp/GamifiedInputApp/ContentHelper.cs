@@ -26,35 +26,42 @@ namespace GamifiedInputApp
             m_content = ExpCompositionContent.Create(m_compositor);
             m_content.AppData = this;
 
-            ScalingRect rect = m_mainWinodw.GameBounds;
+            Point scale = GetScale(m_mainWinodw.GameBounds);
 
             m_backgroundVisual = m_compositor.CreateSpriteVisual();
             m_backgroundVisual.Brush = m_compositor.CreateColorBrush(Microsoft.UI.Colors.White);
-            m_backgroundVisual.Size = new System.Numerics.Vector2((float)rect.ActualWidth, (float)rect.ActualHeight);
-            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
+            m_backgroundVisual.Size = new System.Numerics.Vector2((float)GameBounds.Actual.Width, (float)GameBounds.Actual.Height);
+            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)scale.X, (float)scale.Y, 1.0f);
             m_content.Root = m_backgroundVisual;
 
             m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
 
-            m_mainWinodw.SizeChanged += M_MainWinodw_SizeChanged;
+            m_mainWinodw.BoundsUpdated += M_MainWinodw_BoundsUpdated;
         }
 
         public void Dispose()
         {
             m_backgroundVisual.Dispose();
             m_backgroundVisual = null;
-            m_mainWinodw.SizeChanged -= M_MainWinodw_SizeChanged;
+
+            m_mainWinodw.BoundsUpdated -= M_MainWinodw_BoundsUpdated;
         }
 
-        private void M_MainWinodw_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        public Point TransformInput(Point position) => GameBounds.Transform.Inverse.TransformPoint(position);
+
+        private void M_MainWinodw_BoundsUpdated(object sender, BoundsUpdatedEventArgs args)
         {
-            ScalingRect rect = m_mainWinodw.GameBounds;
-            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)rect.ScaleX, (float)rect.ScaleY, 1.0f);
-
-            SizeChanged(this, args);
+            Point scale = GetScale(args.NewBounds);
+            m_backgroundVisual.Scale = new System.Numerics.Vector3((float)scale.X, (float)scale.Y, 1.0f);
+            BoundsUpdated?.Invoke(this, args);
         }
 
-        public event TypedEventHandler<ContentHelper, WindowSizeChangedEventArgs> SizeChanged;
+        private static Point GetScale(ScalingRect rect)
+        {
+            return new(rect.Scaled.Width / rect.Actual.Width, rect.Scaled.Height / rect.Actual.Height);
+        }
+
+        public event TypedEventHandler<ContentHelper, BoundsUpdatedEventArgs> BoundsUpdated;
         public ScalingRect GameBounds => m_mainWinodw.GameBounds;
         public ExpCompositionContent Content => m_content;
         public ExpInputSite InputSite => m_inputSite;

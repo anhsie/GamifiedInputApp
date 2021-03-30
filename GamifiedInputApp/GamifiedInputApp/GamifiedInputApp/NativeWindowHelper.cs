@@ -64,21 +64,13 @@ namespace GamifiedInputApp
 
         public void Show()
         {
-            DipAwareRect rect = new(m_mainWindow.GameBounds);
-            PInvoke.User32.SetWindowPos(
-                m_hwnd,
-                HWND_TOP,
-                rect.x,
-                rect.y,
-                rect.cx,
-                rect.cy,
-                PInvoke.User32.SetWindowPosFlags.SWP_SHOWWINDOW);
-            m_mainWindow.SizeChanged += M_mainWindow_SizeChanged;
+            UpdateWindowPos(m_mainWindow.GameBounds);
+            m_mainWindow.BoundsUpdated += M_mainWindow_BoundsUpdated;
         }
 
         public void Hide()
         {
-            m_mainWindow.SizeChanged -= M_mainWindow_SizeChanged;
+            m_mainWindow.BoundsUpdated -= M_mainWindow_BoundsUpdated;
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
@@ -89,9 +81,11 @@ namespace GamifiedInputApp
                 PInvoke.User32.SetWindowPosFlags.SWP_HIDEWINDOW | PInvoke.User32.SetWindowPosFlags.SWP_NOMOVE | PInvoke.User32.SetWindowPosFlags.SWP_NOSIZE);
         }
 
-        private void M_mainWindow_SizeChanged(object sender, Microsoft.UI.Xaml.WindowSizeChangedEventArgs args)
+        private void M_mainWindow_BoundsUpdated(object sender, BoundsUpdatedEventArgs args) => UpdateWindowPos(args.NewBounds);
+
+        private void UpdateWindowPos(ScalingRect gameBounds)
         {
-            DipAwareRect rect = new(m_mainWindow.GameBounds);
+            DipAwareRect rect = new(gameBounds);
             PInvoke.User32.SetWindowPos(
                 m_hwnd,
                 HWND_TOP,
@@ -135,10 +129,10 @@ namespace GamifiedInputApp
         {
             public DipAwareRect(ScalingRect bounds)
             {
-                x = (int)(bounds.ScaledLeft * ScaleFactor);
-                y = (int)(bounds.ScaledTop * ScaleFactor);
-                cx = (int)(bounds.ScaledWidth * ScaleFactor);
-                cy = (int)(bounds.ScaledHeight * ScaleFactor);
+                x = (int)(bounds.Scaled.X * ScaleFactor);
+                y = (int)(bounds.Scaled.Y * ScaleFactor);
+                cx = (int)(bounds.Scaled.Width * ScaleFactor);
+                cy = (int)(bounds.Scaled.Height * ScaleFactor);
             }
 
             public int x;

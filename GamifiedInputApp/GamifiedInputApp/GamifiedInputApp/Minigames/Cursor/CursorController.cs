@@ -72,8 +72,7 @@ namespace GamifiedInputApp.Minigames.Cursor
         {
             for (int i = 0; i < cursorVisuals.Count; i++)
             {
-                var transform = this.gameContent.GameBounds.Transform.Inverse;
-                if (InsideVisual(cursorVisuals[i], transform.TransformPoint(args.CurrentPoint.Position)))
+                if (InsideVisual(cursorVisuals[i], gameContent.TransformInput(args.CurrentPoint.Position)))
                 {
                     if (cursorTypesForVisuals[i] == ansCursorType)
                     {
@@ -96,8 +95,7 @@ namespace GamifiedInputApp.Minigames.Cursor
             CoreCursor cursor = new CoreCursor(CoreCursorType.Arrow, 99);
             for (int i = 0; i < cursorVisuals.Count; i++)
             {
-                var transform = this.gameContent.GameBounds.Transform.Inverse;
-                if (InsideVisual(cursorVisuals[i], transform.TransformPoint(args.CurrentPoint.Position)))
+                if (InsideVisual(cursorVisuals[i], gameContent.TransformInput(args.CurrentPoint.Position)))
                 {
                     switch (cursorTypesForVisuals[i])
                     {
