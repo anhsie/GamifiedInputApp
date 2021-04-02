@@ -163,6 +163,7 @@ namespace GamifiedInputApp.Minigames.Gesture
                 // Undo alien from current location
                 SpriteVisual undoVisual = (SpriteVisual)this.rootVisual.Children.ElementAt((int)this.currentAlienIndex);
                 undoVisual.Brush = this.ship;
+                this.pointerInputObserver.Dispose();
             }
 
             // Draw alien in new location. 
