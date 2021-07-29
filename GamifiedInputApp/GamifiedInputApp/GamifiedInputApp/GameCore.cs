@@ -12,7 +12,7 @@ using System.IO;
 using Windows.Media.Playback;
 using Windows.Media.Core;
 using System.Collections.ObjectModel;
-using Microsoft.System;
+using Microsoft.UI.Dispatching;
 
 namespace GamifiedInputApp
 {
@@ -167,7 +167,7 @@ namespace GamifiedInputApp
 
                     // create new content object and place it into the desktop window bridge
                     m_context.Content = new ContentHelper(m_mainWindow);
-                    m_desktopBridge.Connect(m_context.Content.Content, m_context.Content.InputSite);
+                    m_desktopBridge.Connect(m_context.Content.Content);
                     m_currentMinigame.Start(m_context);
 
                     // start timer

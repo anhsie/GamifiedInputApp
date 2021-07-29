@@ -74,7 +74,7 @@
                 </Grid.RowDefinitions>
 
                 <TreeView x:Name="MinigamePicker" Grid.Row="0" Grid.Column="0" Style="{StaticResource FillParent}"
-                          Background="AliceBlue" SelectionMode="Multiple" SelectionChanged="MinigamePicker_SelectionChanged"
+                          Background="AliceBlue" SelectionMode="Multiple" 
                           ItemsSource="{x:Bind TreeSource}" ItemTemplateSelector="{StaticResource MinigameTemplateSelector}" >
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">
