@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DebuggerFlavor>AppHostLocalDebugger</DebuggerFlavor>
-    <RemoteDebugEnabled>False</RemoteDebugEnabled>
-    <RemoteDebugMachine>jnordi-surfacepro5</RemoteDebugMachine>
+    <DebuggerFlavor>AppHostRemoteDebugger</DebuggerFlavor>
+    <RemoteDebugEnabled>True</RemoteDebugEnabled>
+    <RemoteDebugMachine>10.225.116.132</RemoteDebugMachine>
   </PropertyGroup>
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>

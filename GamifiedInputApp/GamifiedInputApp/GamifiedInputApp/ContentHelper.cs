@@ -34,7 +34,7 @@ namespace GamifiedInputApp
             m_backgroundVisual.Scale = new System.Numerics.Vector3((float)scale.X, (float)scale.Y, 1.0f);
             m_content.Root = m_backgroundVisual;
 
-            m_inputSite = ExpInputSite.GetOrCreateForContent(m_content);
+            m_inputSite = m_content.InputSite;
 
             m_mainWinodw.BoundsUpdated += M_MainWinodw_BoundsUpdated;
         }
