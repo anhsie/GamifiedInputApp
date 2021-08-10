@@ -40,7 +40,7 @@
     <AssetTargetFallback>net5.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -115,6 +115,8 @@
     <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <AppInstallerUri>D:\</AppInstallerUri>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <PackageCertificateKeyFile>GamifiedInputApp %28Package%29_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AppxBundle>Always</AppxBundle>
@@ -136,11 +138,8 @@
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.8.1]">
-    <IncludeAssets>build</IncludeAssets>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="0.9.0-20210714.7.CI">
+      <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.8.1]">
-    <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
-</ItemGroup>
+  </ItemGroup>
 </Project>
