@@ -138,8 +138,6 @@
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="0.9.0-20210714.7.CI">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-experimental1" />
   </ItemGroup>
 </Project>
