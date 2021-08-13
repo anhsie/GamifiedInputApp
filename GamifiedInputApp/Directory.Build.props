@@ -1,0 +1,22 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!--Default to enabling AppLocal mode (disabling Framework Package) in any project that contains an appx manifest-->
+    <PropertyGroup Condition="'$(WindowsAppSDKFrameworkPackage)'==''">
+        <PackageAppxManifest>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)'))Package.appxmanifest</PackageAppxManifest>
+        <WindowsAppSDKFrameworkPackage Condition="Exists('$(PackageAppxManifest)')">false</WindowsAppSDKFrameworkPackage>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(WindowsAppSDKFrameworkPackage)'=='false'">
+        <!--Disable redundant unpacking of framework package to work around Xaml tooling issue in VS 16.9-->
+        <WindowsAppSDKCopyXamlToolingLibs>false</WindowsAppSDKCopyXamlToolingLibs>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!--Disable framework package references for all projects-->
+        <WindowsAppSDKFrameworkPackageReference>false</WindowsAppSDKFrameworkPackageReference>
+    </PropertyGroup>
+    
+</Project>

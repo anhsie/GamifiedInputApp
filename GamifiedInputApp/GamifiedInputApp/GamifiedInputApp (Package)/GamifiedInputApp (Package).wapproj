@@ -104,6 +104,9 @@
       <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-20210812.7-CI" />
+  </ItemGroup>
   <PropertyGroup>
     <!--PackageReference.GeneratePathProperty does not support NUGET_PACKAGES env var...-->
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(NUGET_PACKAGES)</NuGetPackageRoot>
@@ -137,7 +140,4 @@
     <AppxBundle>Always</AppxBundle>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-  <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-experimental1" />
-  </ItemGroup>
 </Project>
